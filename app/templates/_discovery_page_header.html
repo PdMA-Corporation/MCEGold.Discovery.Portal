@@ -1,0 +1,14 @@
+<div class="d-flex flex-wrap align-items-center gap-3 mb-2">
+  <h1 class="mb-0">{{ page_title }}</h1>
+  {% if discovery_session.active %}
+    <span class="badge rounded-pill text-bg-success">Discovery Session Active</span>
+  {% else %}
+    <span class="badge rounded-pill text-bg-secondary">Discovery Session Inactive</span>
+  {% endif %}
+  <span class="badge rounded-pill {% if connector_status.status == 'ok' %}text-bg-primary{% else %}text-bg-danger{% endif %}">
+    {% if connector_status.status == 'ok' %}CLI Connected{% else %}CLI Error{% endif %}
+  </span>
+  {% if settings.admin_controls_enabled %}
+    {% include "_end_discovery.html" %}
+  {% endif %}
+</div>

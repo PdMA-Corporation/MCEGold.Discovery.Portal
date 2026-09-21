@@ -1,0 +1,161 @@
+:root {
+  --mce-bg: #f4f6f9;
+  --mce-surface: #ffffff;
+  --mce-surface-muted: #eef2f6;
+  --mce-nav: #111217;
+  --mce-nav-border: #00d3ff;
+  --mce-primary: #1f78c1;
+  --mce-primary-hover: #155f99;
+  --mce-primary-soft: #e7f3fd;
+  --mce-primary-border: #a9d3f2;
+  --mce-text: #1f2933;
+  --mce-text-muted: #5f6b7a;
+  --mce-border: #d7dde5;
+  --mce-success: #198754;
+  --mce-success-soft: #dff3e8;
+  --mce-warning: #b7791f;
+  --mce-warning-soft: #fff3cd;
+  --mce-danger: #c0342b;
+  --mce-danger-soft: #f8d7da;
+  --mce-focus-ring: rgba(31, 120, 193, .25);
+}
+
+body { background: var(--mce-bg); color: var(--mce-text); }
+a { color: var(--mce-primary); }
+a:hover { color: var(--mce-primary-hover); }
+
+.navbar.bg-dark {
+  background: var(--mce-nav) !important;
+  border-bottom: 3px solid var(--mce-nav-border);
+}
+.navbar-brand { letter-spacing: .02em; }
+.navbar-dark .navbar-nav .nav-link { color: rgba(255, 255, 255, .72); }
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link:focus { color: #ffffff; }
+.navbar-dark .navbar-nav .nav-link.active {
+  color: #ffffff;
+  text-decoration: underline;
+  text-decoration-color: var(--mce-nav-border);
+  text-decoration-thickness: 2px;
+  text-underline-offset: .4rem;
+}
+
+h1, h2, h3, h4, h5, h6 { color: var(--mce-text); }
+.lead, .text-secondary, .form-text { color: var(--mce-text-muted) !important; }
+code { color: #43556a; white-space: nowrap; }
+
+.card,
+.table-responsive.card {
+  background: var(--mce-surface);
+  box-shadow: 0 .125rem .5rem rgba(17, 18, 23, .08), inset 0 0 0 1px var(--mce-border) !important;
+}
+table { background: var(--mce-surface); border-radius: .5rem; overflow: hidden; }
+thead { background: var(--mce-surface-muted); color: var(--mce-text); }
+.table-hover > tbody > tr:hover > * { background-color: var(--mce-primary-soft); }
+
+.btn-primary {
+  --bs-btn-bg: var(--mce-primary);
+  --bs-btn-border-color: var(--mce-primary);
+  --bs-btn-hover-bg: var(--mce-primary-hover);
+  --bs-btn-hover-border-color: var(--mce-primary-hover);
+  --bs-btn-active-bg: var(--mce-primary-hover);
+  --bs-btn-active-border-color: var(--mce-primary-hover);
+  --bs-btn-focus-shadow-rgb: 31, 120, 193;
+}
+.btn-outline-secondary {
+  --bs-btn-color: var(--mce-text-muted);
+  --bs-btn-border-color: var(--mce-border);
+  --bs-btn-hover-bg: var(--mce-surface-muted);
+  --bs-btn-hover-border-color: var(--mce-border);
+  --bs-btn-hover-color: var(--mce-text);
+  --bs-btn-active-bg: var(--mce-surface-muted);
+  --bs-btn-active-border-color: var(--mce-border);
+  --bs-btn-active-color: var(--mce-text);
+}
+.btn-outline-danger {
+  --bs-btn-color: var(--mce-danger);
+  --bs-btn-border-color: var(--mce-danger);
+  --bs-btn-hover-bg: var(--mce-danger);
+  --bs-btn-hover-border-color: var(--mce-danger);
+}
+
+.badge { font-weight: 600; }
+.text-bg-primary { background-color: var(--mce-primary) !important; }
+.text-bg-secondary { background-color: #687386 !important; }
+.text-bg-success { background-color: var(--mce-success) !important; }
+.text-bg-warning { background-color: var(--mce-warning-soft) !important; color: #6f4b00 !important; }
+.text-bg-danger { background-color: var(--mce-danger) !important; }
+.text-bg-light { background-color: var(--mce-surface-muted) !important; }
+.reference-status { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28); }
+
+.workflow-overview-step { border: 1px solid var(--mce-border); border-radius: .75rem; padding: 1.25rem; }
+.step-number,
+.workflow-step-number {
+  align-items: center;
+  background: var(--mce-primary-soft);
+  border: 1px solid var(--mce-primary-border);
+  border-radius: 50%;
+  color: var(--mce-primary);
+  display: inline-flex;
+  font-weight: 700;
+  height: 2rem;
+  justify-content: center;
+  width: 2rem;
+}
+.workflow-step { align-items: center; border-left: 2px solid var(--mce-border); display: flex; gap: .75rem; margin-left: 1rem; padding: .65rem 0 .65rem 1rem; }
+.workflow-step.active { border-color: var(--mce-primary); color: var(--mce-primary); font-weight: 700; }
+.workflow-step.completed { border-color: var(--mce-success); color: var(--mce-success); }
+.workflow-step.completed .workflow-step-number { background: var(--mce-success-soft); border-color: #a9dfbf; color: var(--mce-success); }
+.workflow-step.pending { color: #7a8594; }
+.workflow-step.pending .workflow-step-number { background: var(--mce-surface-muted); border-color: var(--mce-border); color: #7a8594; }
+.workflow-sidebar { position: sticky; top: 1.5rem; }
+
+.filter-panel { background: var(--mce-surface-muted); }
+.selection-bar { background: var(--mce-primary-soft); border-left: 4px solid var(--mce-primary); border-radius: .4rem; padding: .8rem 1rem; }
+.selection-bar span { color: var(--mce-text-muted); padding: 0 .35rem; }
+.context-summary { background: var(--mce-surface); border: 1px solid var(--mce-border); border-radius: .5rem; margin-left: 0; margin-right: 0; padding: .75rem; }
+.context-summary span { color: var(--mce-text-muted); display: block; font-size: .75rem; text-transform: uppercase; }
+.context-summary strong { display: block; margin-top: .15rem; }
+
+.form-control,
+.form-select,
+.input-group-text {
+  border-color: var(--mce-border);
+  color: var(--mce-text);
+}
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  border-color: var(--mce-primary);
+  box-shadow: 0 0 0 .25rem var(--mce-focus-ring);
+}
+.form-check-input:checked {
+  background-color: var(--mce-primary);
+  border-color: var(--mce-primary);
+}
+.form-check-input:focus:not(:checked) { border-color: var(--mce-primary); }
+
+.alert-info {
+  background: var(--mce-primary-soft);
+  border-color: var(--mce-primary-border);
+  color: #184f7f;
+}
+.alert-success {
+  background: var(--mce-success-soft);
+  border-color: #a9dfbf;
+  color: #0f5132;
+}
+.alert-warning {
+  background: var(--mce-warning-soft);
+  border-color: #f1d18a;
+  color: #6f4b00;
+}
+.alert-danger {
+  background: var(--mce-danger-soft);
+  border-color: #e7a7ac;
+  color: #842029;
+}
+
+footer.bg-light { background: var(--mce-surface-muted) !important; }
+
+@media (max-width: 991.98px) { .workflow-sidebar { position: static; } }

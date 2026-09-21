@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ settings.app_name }}{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', path='/css/site.css') }}" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100">
+  {% set nav_path = request.url.path %}
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-semibold" href="/">MCEGold Discovery</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <div class="navbar-nav ms-lg-auto">
+          <a class="nav-link {% if nav_path == '/' %}active{% endif %}" href="/">Home</a>
+          <a class="nav-link {% if nav_path.startswith('/discovery') %}active{% endif %}" href="/discovery/sites">Discovery</a>
+          <a class="nav-link" href="{{ settings.grafana_dashboard_url }}" target="_blank" rel="noopener">Dashboard</a>
+          {% if settings.admin_controls_enabled %}
+            <a class="nav-link {% if nav_path.startswith('/settings') %}active{% endif %}" href="/settings">Settings</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </nav>
+  <main class="container py-5 flex-grow-1">{% block content %}{% endblock %}</main>
+  <footer class="border-top bg-light py-3 text-center text-secondary small">
+    MCEGold Discovery Portal
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

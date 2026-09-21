@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Select Site | {{ settings.app_name }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Discovery</li><li class="breadcrumb-item active">Sites</li></ol></nav>
+<div class="row g-4">
+  <div class="col-lg-3">{% set active_step = 1 %}{% include "_workflow_sidebar.html" %}</div>
+  <div class="col-lg-9">
+    {% set page_title = "Select Site" %}{% include "_discovery_page_header.html" %}
+    <p class="text-secondary mb-3 mt-2">Choose a site to view its segments.</p>
+    {% if connector_error %}
+    <div class="alert alert-warning small" role="alert">
+      <div class="fw-semibold">Could not load sites.</div>
+      <div>{{ connector_error.message }}</div>
+      {% if connector_error.exitCode is not none %}<div><strong>Exit code:</strong> {{ connector_error.exitCode }}</div>{% endif %}
+      {% if connector_error.timeoutSeconds %}<div><strong>Timeout:</strong> {{ connector_error.timeoutSeconds }} seconds</div>{% endif %}
+      {% if connector_error.fault %}
+        <div><strong>Fault:</strong> {{ connector_error.fault.code or 'UnknownFault' }}{% if connector_error.fault.message %} - {{ connector_error.fault.message }}{% endif %}</div>
+      {% endif %}
+    </div>
+    {% endif %}
+    <div class="selection-bar mb-3"><strong>Current selection:</strong> No site selected</div>
+    <div class="table-responsive card border-0 shadow-sm"><table class="table table-hover align-middle mb-0"><thead><tr><th>Site Name</th><th>Site Type</th><th>Action</th></tr></thead><tbody>
+    {% for site in sites %}<tr><td class="fw-semibold">{{ site.site_name }}</td><td><span class="badge text-bg-secondary">{{ site.site_type }}</span></td><td><form method="post" action="/discovery/select-site" class="m-0"><input type="hidden" name="site_uuid" value="{{ site.site_uuid }}"><input type="hidden" name="site_name" value="{{ site.site_name }}"><input type="hidden" name="site_type" value="{{ site.site_type }}"><button class="btn btn-sm btn-primary text-nowrap" type="submit">View Segments</button></form></td></tr>{% else %}<tr><td colspan="3" class="text-center text-secondary py-4">No sites are available.</td></tr>{% endfor %}
+    </tbody></table></div>
+    {% set diagnostic_operation = "GetSites" %}{% include "_discovery_diagnostics.html" %}
+  </div>
+</div>
+{% endblock %}

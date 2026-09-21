@@ -1,0 +1,10 @@
+{% set ref = reference_data_status %}
+{% if ref.status == 'loaded' %}
+  <span class="badge rounded-pill text-bg-success reference-status" role="status" title="Reference data loaded from CCOM Reference Data.">✓ Reference Data Loaded</span>
+{% elif ref.status == 'missing' %}
+  <span class="badge rounded-pill text-bg-warning reference-status" role="status" title="{{ ref.warning or 'Reference data file is missing.' }}">⚠ Reference Data Missing</span>
+{% elif ref.status == 'failed' %}
+  <span class="badge rounded-pill text-bg-danger reference-status" role="status" title="{{ ref.warning or 'Reference data failed to load.' }}">⚠ Reference Data Load Failed</span>
+{% else %}
+  <span class="badge rounded-pill text-bg-secondary reference-status" role="status">Reference Data Not Loaded</span>
+{% endif %}

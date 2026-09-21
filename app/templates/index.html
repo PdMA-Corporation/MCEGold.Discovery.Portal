@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="mb-5">
+  <div class="d-flex flex-wrap align-items-center gap-3">
+    <h1 class="display-5 fw-bold mb-0">MCEGold Discovery Portal</h1>
+    {% include "_reference_data_status.html" %}
+    {% include "_connector_status.html" %}
+  </div>
+  {% if home_message %}<div class="alert alert-info py-2 mt-3 mb-0">{{ home_message }}</div>{% endif %}
+  <p class="lead text-secondary col-lg-9">Explore MCEGold sites, segments, measurement locations, and measurements before building Grafana dashboards.</p>
+  <form method="post" action="/discovery/start" class="mt-2">
+    <button class="btn btn-primary btn-lg" type="submit">Start Discovery</button>
+  </form>
+</section>
+<section class="card border-0 shadow-sm">
+  <div class="card-body p-4 p-lg-5">
+    <h2 class="h4 mb-4">Guided discovery workflow</h2>
+    <div class="row g-3 workflow-overview">
+      {% for number, title, description in [
+        (1, 'Select Site', 'Choose the operating site to explore.'),
+        (2, 'Select Segment', 'Narrow discovery to a system or process segment.'),
+        (3, 'Select Measurement Location', 'Choose a configured collection point.'),
+        (4, 'Review Measurements', 'Inspect available values, units, and status.')
+      ] %}
+      <div class="col-md-6 col-xl-3">
+        <div class="workflow-overview-step h-100">
+          <span class="step-number">{{ number }}</span>
+          <h3 class="h6 mt-3">{{ title }}</h3>
+          <p class="small text-secondary mb-0">{{ description }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

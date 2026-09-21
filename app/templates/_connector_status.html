@@ -1,0 +1,4 @@
+{% set connector = connector_status %}
+<span class="badge rounded-pill {% if connector.status == 'ok' %}text-bg-primary{% else %}text-bg-danger{% endif %}" role="status">
+  CLI Status: {% if connector.status == 'ok' %}OK{% else %}Error{% endif %}
+</span>

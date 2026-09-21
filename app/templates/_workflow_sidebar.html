@@ -1,0 +1,11 @@
+<aside class="workflow-sidebar card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <h2 class="h6 text-uppercase text-secondary mb-3">Discovery workflow</h2>
+    {% for step, label in [(1, 'Select Site'), (2, 'Select Segment'), (3, 'Select Measurement Location'), (4, 'Review Measurements')] %}
+    <div class="workflow-step {% if step < active_step %}completed{% elif step == active_step %}active{% else %}pending{% endif %}">
+      <span class="workflow-step-number">{% if step < active_step %}✓{% else %}{{ step }}{% endif %}</span>
+      <span>{{ label }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</aside>

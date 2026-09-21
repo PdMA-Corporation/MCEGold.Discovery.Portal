@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}Portal Settings - {{ settings.app_name }}{% endblock %}
+{% block content %}
+{% set config = portal_settings %}
+<section class="mb-4">
+  <div class="d-flex flex-wrap align-items-center gap-3">
+    <h1 class="mb-0">Portal Settings</h1>
+    {% include "_connector_status.html" %}
+  </div>
+  <p class="text-secondary mb-0 mt-2">Application settings are saved in SQLite. Deployment wiring remains in local configuration.</p>
+</section>
+
+{% if config.saved %}
+  <div class="alert alert-success">Settings saved.</div>
+{% endif %}
+{% if config.errors %}
+  <div class="alert alert-danger">
+    <div class="fw-semibold">Settings were not saved.</div>
+    <ul class="mb-0">
+      {% for error in config.errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+<form method="post" action="/settings">
+  <input type="hidden" name="application_settings_present" value="1">
+
+  <section class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      {% set collector_status = config.collector_status %}
+      <h2 class="h5 mb-3">Publication Collector</h2>
+      <div class="form-check form-switch mb-2">
+        <input id="collector_enabled" name="collector_enabled" class="form-check-input" type="checkbox" value="on" {% if config.application.form.collector_enabled %}checked{% endif %}>
+        <label for="collector_enabled" class="form-check-label fw-semibold">Enable Publication Collector</label>
+      </div>
+      <p class="text-secondary small mb-4">Enables or pauses Publication Collector processing. The Collector process remains running while disabled.</p>
+
+      <div>
+        <label for="collector_polling_interval_seconds" class="form-label fw-semibold">Polling interval</label>
+        <div class="input-group">
+          <input id="collector_polling_interval_seconds" name="collector_polling_interval_seconds" type="number" min="1" step="1" class="form-control" value="{{ config.application.form.collector_polling_interval_seconds }}">
+          <span class="input-group-text">seconds</span>
+        </div>
+        <div class="form-text">Collector polling interval in seconds. Changes apply while the Collector is running.</div>
+      </div>
+
+      <div class="border-top pt-3 mt-4">
+        <dl class="row small mb-0">
+          <dt class="col-sm-4 text-secondary fw-normal">Runtime status</dt>
+          <dd class="col-sm-8">
+            <span class="badge {{ collector_status.badge_class }}">{{ collector_status.runtime_status }}</span>
+            {% if collector_status.message %}
+              <div class="form-text mt-1">{{ collector_status.message }}</div>
+            {% endif %}
+          </dd>
+
+          <dt class="col-sm-4 text-secondary fw-normal">Last seen</dt>
+          <dd class="col-sm-8">{{ collector_status.last_seen }}</dd>
+
+          <dt class="col-sm-4 text-secondary fw-normal">Last publication</dt>
+          <dd class="col-sm-8">{{ collector_status.last_publication }}</dd>
+
+          {% if collector_status.last_error %}
+            <dt class="col-sm-4 text-secondary fw-normal">Last error</dt>
+            <dd class="col-sm-8 text-break">
+              {% if collector_status.last_error_utc %}
+                <span class="text-secondary">{{ collector_status.last_error_utc }}</span>
+              {% endif %}
+              <div>{{ collector_status.last_error }}</div>
+            </dd>
+          {% endif %}
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <h2 class="h5 mb-3">Data Retention</h2>
+      <div class="form-check form-switch mb-2">
+        <input id="data_retention_enabled" name="data_retention_enabled" class="form-check-input" type="checkbox" value="on" {% if config.application.form.data_retention_enabled %}checked{% endif %}>
+        <label for="data_retention_enabled" class="form-check-label fw-semibold">Enable automatic data retention</label>
+      </div>
+      <p class="text-secondary small mb-4">When enabled, the Publication Collector removes measurement history older than the configured retention period.</p>
+
+      <div>
+        <label for="data_retention_days" class="form-label fw-semibold">Measurement retention period</label>
+        <div class="input-group">
+          <input id="data_retention_days" name="data_retention_days" type="number" min="30" max="730" step="1" class="form-control" value="{{ config.application.form.data_retention_days }}">
+          <span class="input-group-text">days</span>
+        </div>
+        <div class="form-text">Allowed range: 30 to 730 days. Data older than the retention period is permanently removed.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <h2 class="h5 mb-3">Energy Cost</h2>
+      <div class="mb-4">
+        <label for="energy_cost_currency_uom_uuid" class="form-label fw-semibold">Currency</label>
+        <select id="energy_cost_currency_uom_uuid" name="energy_cost_currency_uom_uuid" class="form-select">
+          <option value="">Select currency</option>
+          {% for currency in config.application.currencies %}
+            <option value="{{ currency.uuid }}" {% if currency.uuid == config.application.form.energy_cost_currency_uom_uuid %}selected{% endif %}>{{ currency.short_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="energy_cost_rate_per_kwh" class="form-label fw-semibold">Rate per kWh</label>
+        <input id="energy_cost_rate_per_kwh" name="energy_cost_rate_per_kwh" type="number" min="0" step="0.000001" class="form-control" value="{{ config.application.form.energy_cost_rate_per_kwh }}">
+      </div>
+
+      {% if config.application.rate_summary %}
+        <div class="form-text">Displayed as: {{ config.application.rate_summary }}</div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <h2 class="h5 mb-2">MCEGold Data Services</h2>
+      <p class="text-secondary small mb-4">Connection values used by the Portal when it invokes the MCEGold Connector CLI. Local-file credentials may be stored in clear text.</p>
+
+      <div class="mb-4">
+        <label for="mcegold_data_services_url" class="form-label fw-semibold">Service URL</label>
+        <input id="mcegold_data_services_url" name="mcegold_data_services_url" type="url" class="form-control" value="{{ config.fields.mcegold_data_services_url.value }}">
+        <div class="form-text">MCEGold Data Services endpoint used by the Portal and Connector. Source: {{ config.fields.mcegold_data_services_url.source }}</div>
+      </div>
+
+      <div class="mb-4">
+        <label for="mcegold_username" class="form-label fw-semibold">Username</label>
+        <input id="mcegold_username" name="mcegold_username" class="form-control" value="{{ config.fields.mcegold_username.value }}">
+        <div class="form-text">Source: {{ config.fields.mcegold_username.source }}</div>
+      </div>
+
+      <div class="mb-4">
+        <label for="mcegold_password" class="form-label fw-semibold">Password</label>
+        <input id="mcegold_password" name="mcegold_password" type="password" autocomplete="new-password" class="form-control" value="">
+        <div class="form-text">
+          {% if config.fields.mcegold_password.configured %}Configured. Leave blank to keep the existing password.{% else %}Not configured. Enter a value to store a password.{% endif %}
+          Source: {{ config.fields.mcegold_password.source }}.
+        </div>
+        {% if config.fields.mcegold_password.configured %}
+          <div class="form-check mt-2">
+            <input id="clear_mcegold_password" name="clear_mcegold_password" class="form-check-input" type="checkbox" value="on">
+            <label for="clear_mcegold_password" class="form-check-label">Clear stored password</label>
+          </div>
+        {% endif %}
+      </div>
+
+      <div>
+        <label for="mcegold_api_key" class="form-label fw-semibold">API Key</label>
+        <input id="mcegold_api_key" name="mcegold_api_key" type="password" autocomplete="new-password" class="form-control" value="">
+        <div class="form-text">
+          {% if config.fields.mcegold_api_key.configured %}Configured. Leave blank to keep the existing API key.{% else %}Not configured. Enter a value to store an API key.{% endif %}
+          Source: {{ config.fields.mcegold_api_key.source }}.
+        </div>
+        {% if config.fields.mcegold_api_key.configured %}
+          <div class="form-check mt-2">
+            <input id="clear_mcegold_api_key" name="clear_mcegold_api_key" class="form-check-input" type="checkbox" value="on">
+            <label for="clear_mcegold_api_key" class="form-check-label">Clear stored API key</label>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <h2 class="h5 mb-2">Deployment / Advanced</h2>
+      <p class="text-secondary small mb-4">These values control local/deployment wiring and are stored in <code>{{ config.local_config_path }}</code> rather than application settings.</p>
+
+      <div class="mb-4">
+        <label for="mcegold_cli_path" class="form-label fw-semibold">MCEGold CLI executable path</label>
+        <input id="mcegold_cli_path" name="mcegold_cli_path" class="form-control" value="{{ config.fields.mcegold_cli_path.value }}">
+        <div class="form-text">Source: {{ config.fields.mcegold_cli_path.source }}</div>
+        {% if config.fields.mcegold_cli_path.warning %}<div class="text-warning small mt-1">{{ config.fields.mcegold_cli_path.warning }}</div>{% endif %}
+      </div>
+
+      <div class="mb-4">
+        <label for="connector_config_path" class="form-label fw-semibold">Connector config path</label>
+        <input id="connector_config_path" name="connector_config_path" class="form-control" value="{{ config.fields.connector_config_path.value }}">
+        <div class="form-text">Source: {{ config.fields.connector_config_path.source }}</div>
+        {% if config.fields.connector_config_path.warning %}<div class="text-warning small mt-1">{{ config.fields.connector_config_path.warning }}</div>{% endif %}
+      </div>
+
+      <div>
+        <label for="discovery_database_path" class="form-label fw-semibold">SQLite database path</label>
+        <input id="discovery_database_path" name="discovery_database_path" class="form-control" value="{{ config.fields.discovery_database_path.value }}">
+        <div class="form-text">Source: {{ config.fields.discovery_database_path.source }}</div>
+      </div>
+
+      <div class="mt-4">
+        <label for="grafana_dashboard_url" class="form-label fw-semibold">Grafana dashboard URL</label>
+        <input id="grafana_dashboard_url" name="grafana_dashboard_url" class="form-control" value="{{ config.fields.grafana_dashboard_url.value }}">
+        <div class="form-text">Source: {{ config.fields.grafana_dashboard_url.source }}</div>
+      </div>
+    </div>
+  </section>
+
+  <button class="btn btn-primary" type="submit">Save</button>
+</form>
+{% endblock %}

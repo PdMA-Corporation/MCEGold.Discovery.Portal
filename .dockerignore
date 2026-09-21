@@ -1,0 +1,38 @@
+.git
+.venv
+venv
+env
+__pycache__
+**/__pycache__
+.pytest_cache
+
+build
+dist
+*.egg-info
+.coverage
+coverage.xml
+htmlcov
+.mypy_cache
+.ruff_cache
+
+# Runtime/local data
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+*.db-wal
+*.db-shm
+logs
+*.log
+
+# Local config/secrets
+configs/connector.config.json
+configs/portal.local.json
+.env
+.env.*
+*.local.json
+
+# Public image must not receive bundled binary payloads
+*.pdb
+*.dll
+*.exe
+docker/mcegold-cli

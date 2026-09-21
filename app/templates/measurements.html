@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Review Measurements | {{ settings.app_name }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="/discovery/sites">Discovery</a></li><li class="breadcrumb-item"><a href="/discovery/sites">Sites</a></li><li class="breadcrumb-item"><a href="/discovery/sites/{{ site.site_uuid }}/segments">{{ site.site_name }}</a></li><li class="breadcrumb-item">Segments</li><li class="breadcrumb-item"><a href="/discovery/sites/{{ site.site_uuid }}/segments/{{ segment.segment_uuid }}/measurement-locations">{{ segment.segment_name }}</a></li><li class="breadcrumb-item">Measurement Locations</li><li class="breadcrumb-item">{{ location.location_name }}</li><li class="breadcrumb-item active">Measurements</li></ol></nav>
+<div class="row g-4"><div class="col-lg-3">{% set active_step = 4 %}{% include "_workflow_sidebar.html" %}</div><div class="col-lg-9">
+  {% set page_title = "Review Measurements" %}{% include "_discovery_page_header.html" %}
+  <p class="text-secondary mt-2">Preview measurement values for the selected location. This is for discovery and validation, not analytics.</p>
+  {% if validation_error %}<div class="alert alert-warning">{{ validation_error }}</div>{% endif %}
+  {% if connector_error %}<div class="alert alert-warning"><div class="fw-semibold">Could not load measurements.</div><div>{{ connector_error.message }}{% if connector_error.exitCode is not none %} Exit code: {{ connector_error.exitCode }}{% endif %}</div>{% if connector_error.fault %}<div>Fault: {{ connector_error.fault.code }} {{ connector_error.fault.message }}</div>{% endif %}</div>{% endif %}
+  <div class="context-summary row g-3 mb-3">
+    <div class="col-md-4"><span>Site Name</span><strong>{{ site.site_name }}</strong></div>
+    <div class="col-md-4"><span>Segment Name</span><strong>{{ segment.segment_name }}</strong></div>
+    <div class="col-md-4"><span>Measurement Location Name</span><strong>{{ location.location_name }}</strong></div>
+    <div class="col-md-3"><span>Measurement Location Type</span><strong>{{ location.location_type }}</strong></div>
+    <div class="col-md-3"><span>Value Class</span><strong>{{ location.value_class or "-" }}</strong></div>
+    <div class="col-md-3"><span>Unit</span><strong>{{ location.unit or "-" }}</strong></div>
+  </div>
+  <div class="selection-bar mb-4"><strong>Current selection:</strong> Site: {{ site.site_name }} <span>-></span> Segment: {{ segment.segment_name }} <span>-></span> Measurement Location: {{ location.location_name }}</div>
+  <form class="card filter-panel border-0 shadow-sm mb-4" method="get"><div class="card-body">
+    <div class="row g-3 align-items-end measurement-filter-row">
+      <div class="col-md-3"><label class="form-label" for="recorded_from">Recorded From</label><input class="form-control" type="datetime-local" id="recorded_from" name="recorded_from" value="{{ filters.recorded_from }}"></div>
+      <div class="col-md-3"><label class="form-label" for="recorded_to">Recorded To</label><input class="form-control" type="datetime-local" id="recorded_to" name="recorded_to" value="{{ filters.recorded_to }}"></div>
+      <div class="col-md-3"><label class="form-label" for="max_items">Max Items</label><select class="form-select" id="max_items" name="max_items">{% for item in max_item_options %}<option value="{{ item }}" {% if filters.max_items == item|string %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></div>
+      <div class="col-md-3 d-flex gap-2 align-items-end"><button class="btn btn-primary" type="submit" name="searched" value="true">Search</button><a class="btn btn-outline-secondary" href="/discovery/sites/{{ site.site_uuid }}/segments/{{ segment.segment_uuid }}/measurement-locations/{{ location.location_uuid }}/measurements">Clear</a></div>
+    </div>
+    <div class="form-text mt-2">Measurement values are preview data for validation, not analytics.</div>
+  </div></form>
+  <div class="table-responsive card border-0 shadow-sm"><table class="table table-hover align-middle mb-0"><thead><tr><th>Recorded UTC</th><th>Value</th></tr></thead><tbody>
+  {% if not results_requested %}<tr><td colspan="2" class="text-center text-secondary py-4">Set filters and click Search to preview measurements for this location.</td></tr>{% else %}{% for item in measurements %}<tr><td class="text-nowrap">{{ item.timestamp_utc.strftime('%Y-%m-%d %H:%M:%S') }}</td><td class="fw-semibold">{{ item.value }}</td></tr>{% else %}<tr><td colspan="2" class="text-center text-secondary py-4">No measurements found for this location and filter.</td></tr>{% endfor %}{% endif %}
+  </tbody></table></div>
+  {% set diagnostic_operation = "GetMeasurements" %}{% set diagnostic_measurement_location_uuid = location.location_uuid %}{% include "_discovery_diagnostics.html" %}
+</div></div>
+{% endblock %}

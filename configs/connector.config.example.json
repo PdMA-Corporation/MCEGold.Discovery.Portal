@@ -1,0 +1,15 @@
+{
+  "host": "",
+  "authenticationScheme": "BasicApi",
+  "apiKey": "",
+  "userName": "",
+  "password": "",
+  "request": {
+    "channel": "/pdmaeye/request",
+    "readResponse": true,
+    "removeResponseOnSuccess": false
+  },
+  "publication": {
+    "channel": "/pdmaeye/publication"
+  }
+}

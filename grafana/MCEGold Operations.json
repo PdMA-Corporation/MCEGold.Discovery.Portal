@@ -1,0 +1,2086 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 15,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 106,
+      "panels": [],
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "id": 107,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "SELECT\n  COUNT(DISTINCT SiteUuid) AS value\nFROM DimSite;",
+          "queryText": "SELECT\n  COUNT(DISTINCT SiteUuid) AS value\nFROM DimSite;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  COUNT(DISTINCT SiteUuid) AS value\nFROM DimSite;",
+          "refId": "A"
+        }
+      ],
+      "title": "Sites",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "id": 108,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "SELECT\n  COUNT(DISTINCT segment.SegmentKey) AS value\nFROM DimSegment segment\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER);",
+          "queryText": "SELECT\n  COUNT(DISTINCT segment.SegmentKey) AS value\nFROM DimSegment segment\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER);",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  COUNT(DISTINCT segment.SegmentKey) AS value\nFROM DimSegment segment\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER);",
+          "refId": "A"
+        }
+      ],
+      "title": "Segments",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "description": "Active Segment = segment with at least one measurement received in the last 15 minutes.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "id": 109,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "SELECT\n  COUNT(DISTINCT segment.SegmentKey) AS value\nFROM DimSegment segment\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nJOIN DimMeasurementLocation ml\n  ON ml.SegmentKey = segment.SegmentKey\nJOIN FactMeasurement f\n  ON f.MeasurementLocationKey = ml.MeasurementLocationKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER)\n  AND f.MeasurementTimestampUtc >= strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '-15 minutes');",
+          "queryText": "SELECT\n  COUNT(DISTINCT segment.SegmentKey) AS value\nFROM DimSegment segment\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nJOIN DimMeasurementLocation ml\n  ON ml.SegmentKey = segment.SegmentKey\nJOIN FactMeasurement f\n  ON f.MeasurementLocationKey = ml.MeasurementLocationKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER)\n  AND f.MeasurementTimestampUtc >= strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '-15 minutes');",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  COUNT(DISTINCT segment.SegmentKey) AS value\nFROM DimSegment segment\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nJOIN DimMeasurementLocation ml\n  ON ml.SegmentKey = segment.SegmentKey\nJOIN FactMeasurement f\n  ON f.MeasurementLocationKey = ml.MeasurementLocationKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER)\n  AND f.MeasurementTimestampUtc >= strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '-15 minutes');",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Segments",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "description": "Active Segment = segment with at least one measurement received in the last 15 minutes.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "id": 110,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "SELECT\n  COUNT(DISTINCT segment.SegmentKey) - COUNT(DISTINCT CASE\n    WHEN f.MeasurementTimestampUtc >= strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '-15 minutes') THEN segment.SegmentKey\n  END) AS value\nFROM DimSegment segment\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nLEFT JOIN DimMeasurementLocation ml\n  ON ml.SegmentKey = segment.SegmentKey\nLEFT JOIN FactMeasurement f\n  ON f.MeasurementLocationKey = ml.MeasurementLocationKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER);",
+          "queryText": "SELECT\n  COUNT(DISTINCT segment.SegmentKey) - COUNT(DISTINCT CASE\n    WHEN f.MeasurementTimestampUtc >= strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '-15 minutes') THEN segment.SegmentKey\n  END) AS value\nFROM DimSegment segment\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nLEFT JOIN DimMeasurementLocation ml\n  ON ml.SegmentKey = segment.SegmentKey\nLEFT JOIN FactMeasurement f\n  ON f.MeasurementLocationKey = ml.MeasurementLocationKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER);",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  COUNT(DISTINCT segment.SegmentKey) - COUNT(DISTINCT CASE\n    WHEN f.MeasurementTimestampUtc >= strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '-15 minutes') THEN segment.SegmentKey\n  END) AS value\nFROM DimSegment segment\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nLEFT JOIN DimMeasurementLocation ml\n  ON ml.SegmentKey = segment.SegmentKey\nLEFT JOIN FactMeasurement f\n  ON f.MeasurementLocationKey = ml.MeasurementLocationKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER);",
+          "refId": "A"
+        }
+      ],
+      "title": "Inactive Segments",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "id": 111,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "SELECT\n  COUNT(DISTINCT ml.MeasurementLocationKey) AS value\nFROM DimMeasurementLocation ml\nJOIN DimSegment segment\n  ON segment.SegmentKey = ml.SegmentKey\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER);",
+          "queryText": "SELECT\n  COUNT(DISTINCT ml.MeasurementLocationKey) AS value\nFROM DimMeasurementLocation ml\nJOIN DimSegment segment\n  ON segment.SegmentKey = ml.SegmentKey\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER);",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  COUNT(DISTINCT ml.MeasurementLocationKey) AS value\nFROM DimMeasurementLocation ml\nJOIN DimSegment segment\n  ON segment.SegmentKey = ml.SegmentKey\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER);",
+          "refId": "A"
+        }
+      ],
+      "title": "Measurement Locations",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text"
+              }
+            ]
+          },
+          "unit": "dateTimeAsIso"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "id": 112,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "SELECT\n  CAST(strftime('%s', MAX(f.MeasurementTimestampUtc)) AS INTEGER) * 1000 AS value\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimSegment segment\n  ON segment.SegmentKey = ml.SegmentKey\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER);",
+          "queryText": "SELECT\n  CAST(strftime('%s', MAX(f.MeasurementTimestampUtc)) AS INTEGER) * 1000 AS value\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimSegment segment\n  ON segment.SegmentKey = ml.SegmentKey\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER);",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  CAST(strftime('%s', MAX(f.MeasurementTimestampUtc)) AS INTEGER) * 1000 AS value\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimSegment segment\n  ON segment.SegmentKey = ml.SegmentKey\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER);",
+          "refId": "A"
+        }
+      ],
+      "title": "Latest Data",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 100,
+      "panels": [],
+      "title": "Power",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 6
+      },
+      "id": 2,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Load, Full Load Percentage')\n    AND ml.ValueClass = 'Percentage'\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('1' AS INTEGER)\n    AND mlt.ShortName IN ('Load, Full Load Percentage')\n    AND ml.ValueClass = 'Percentage'\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Load, Full Load Percentage')\n    AND ml.ValueClass = 'Percentage'\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Load / %FLA",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "mappings": [
+            {
+              "options": {
+                "from": -1000000000000000,
+                "result": {
+                  "color": "blue",
+                  "index": 0
+                },
+                "to": 1000000000000000
+              },
+              "type": "range"
+            }
+          ],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 6
+      },
+      "id": 4,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Efficiency Percentage')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('1' AS INTEGER)\n    AND mlt.ShortName IN ('Efficiency Percentage')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Efficiency Percentage')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Efficiency",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "mappings": [
+            {
+              "options": {
+                "from": -1000000000000000,
+                "result": {
+                  "color": "blue",
+                  "index": 0
+                },
+                "to": 1000000000000000
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 6
+      },
+      "id": 113,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  JOIN DimSegment segment\n    ON segment.SegmentKey = ml.SegmentKey\n  WHERE segment.SiteKey = CAST('$site' AS INTEGER)\n    AND ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Voltage 2-3 (THD)')\n    AND ml.ValueClass = 'Percentage'\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  JOIN DimSegment segment\n    ON segment.SegmentKey = ml.SegmentKey\n  WHERE segment.SiteKey = CAST('1' AS INTEGER)\n    AND ml.SegmentKey = CAST('1' AS INTEGER)\n    AND mlt.ShortName IN ('Voltage 2-3 (THD)')\n    AND ml.ValueClass = 'Percentage'\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  JOIN DimSegment segment\n    ON segment.SegmentKey = ml.SegmentKey\n  WHERE segment.SiteKey = CAST('$site' AS INTEGER)\n    AND ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Voltage 2-3 (THD)')\n    AND ml.ValueClass = 'Percentage'\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Voltage THD 2-3",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "mappings": [
+            {
+              "options": {
+                "from": -1000000000000000,
+                "result": {
+                  "color": "blue",
+                  "index": 0
+                },
+                "to": 1000000000000000
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 6
+      },
+      "id": 114,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  JOIN DimSegment segment\n    ON segment.SegmentKey = ml.SegmentKey\n  WHERE segment.SiteKey = CAST('$site' AS INTEGER)\n    AND ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Current 2 (THD)')\n    AND ml.ValueClass = 'Percentage'\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  JOIN DimSegment segment\n    ON segment.SegmentKey = ml.SegmentKey\n  WHERE segment.SiteKey = CAST('1' AS INTEGER)\n    AND ml.SegmentKey = CAST('1' AS INTEGER)\n    AND mlt.ShortName IN ('Current 2 (THD)')\n    AND ml.ValueClass = 'Percentage'\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  JOIN DimSegment segment\n    ON segment.SegmentKey = ml.SegmentKey\n  WHERE segment.SiteKey = CAST('$site' AS INTEGER)\n    AND ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Current 2 (THD)')\n    AND ml.ValueClass = 'Percentage'\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Current THD 2",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "mappings": [
+            {
+              "options": {
+                "from": -1000000000000000,
+                "result": {
+                  "color": "blue",
+                  "index": 0
+                },
+                "to": 1000000000000000
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 6
+      },
+      "id": 10,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Voltage Line to Line Imbalance, Fund', 'Voltage, Phase Imbalance, Percentage')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Voltage Line to Line Imbalance, Fund', 'Voltage, Phase Imbalance, Percentage')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Voltage Line to Line Imbalance, Fund', 'Voltage, Phase Imbalance, Percentage')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "refId": "A"
+        }
+      ],
+      "title": "Voltage Imbalance",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "mappings": [
+            {
+              "options": {
+                "from": -1000000000000000,
+                "result": {
+                  "color": "blue",
+                  "index": 0
+                },
+                "to": 1000000000000000
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 6
+      },
+      "id": 9,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Current Imbalance, Percentage', 'Current Phase Imbalance, Percentage')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Current Imbalance, Percentage', 'Current Phase Imbalance, Percentage')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Current Imbalance, Percentage', 'Current Phase Imbalance, Percentage')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "refId": "A"
+        }
+      ],
+      "title": "Current Imbalance",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "decimals": 2,
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text"
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Real Power"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Real"
+              },
+              {
+                "id": "unit",
+                "value": "suffix: kW"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Reactive Power"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Reactive"
+              },
+              {
+                "id": "unit",
+                "value": "suffix: kVAR"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Apparent Power"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Apparent"
+              },
+              {
+                "id": "unit",
+                "value": "suffix: kVA"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 10
+      },
+      "id": 15,
+      "options": {
+        "displayMode": "basic",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 32,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "left",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "text"
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "SELECT\n  (\n    SELECT f.NumericValue\n    FROM FactMeasurement f\n    JOIN DimMeasurementLocation ml\n      ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n    JOIN DimMeasurementLocationType mlt\n      ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n    WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n      AND mlt.ShortName = 'Total kW'\n    ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n    LIMIT 1\n  ) AS 'Real Power',\n  (\n    SELECT f.NumericValue\n    FROM FactMeasurement f\n    JOIN DimMeasurementLocation ml\n      ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n    JOIN DimMeasurementLocationType mlt\n      ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n    WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n      AND mlt.ShortName = 'Total kVAR'\n    ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n    LIMIT 1\n  ) AS 'Reactive Power',\n  (\n    SELECT f.NumericValue\n    FROM FactMeasurement f\n    JOIN DimMeasurementLocation ml\n      ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n    JOIN DimMeasurementLocationType mlt\n      ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n    WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n      AND mlt.ShortName = 'Total kVA'\n    ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n    LIMIT 1\n  ) AS 'Apparent Power';",
+          "queryText": "SELECT\n  (\n    SELECT f.NumericValue\n    FROM FactMeasurement f\n    JOIN DimMeasurementLocation ml\n      ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n    JOIN DimMeasurementLocationType mlt\n      ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n    WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n      AND mlt.ShortName = 'Total kW'\n    ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n    LIMIT 1\n  ) AS 'Real Power',\n  (\n    SELECT f.NumericValue\n    FROM FactMeasurement f\n    JOIN DimMeasurementLocation ml\n      ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n    JOIN DimMeasurementLocationType mlt\n      ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n    WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n      AND mlt.ShortName = 'Total kVAR'\n    ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n    LIMIT 1\n  ) AS 'Reactive Power',\n  (\n    SELECT f.NumericValue\n    FROM FactMeasurement f\n    JOIN DimMeasurementLocation ml\n      ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n    JOIN DimMeasurementLocationType mlt\n      ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n    WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n      AND mlt.ShortName = 'Total kVA'\n    ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n    LIMIT 1\n  ) AS 'Apparent Power';",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  (\n    SELECT f.NumericValue\n    FROM FactMeasurement f\n    JOIN DimMeasurementLocation ml\n      ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n    JOIN DimMeasurementLocationType mlt\n      ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n    WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n      AND mlt.ShortName = 'Total kW'\n    ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n    LIMIT 1\n  ) AS 'Real Power',\n  (\n    SELECT f.NumericValue\n    FROM FactMeasurement f\n    JOIN DimMeasurementLocation ml\n      ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n    JOIN DimMeasurementLocationType mlt\n      ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n    WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n      AND mlt.ShortName = 'Total kVAR'\n    ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n    LIMIT 1\n  ) AS 'Reactive Power',\n  (\n    SELECT f.NumericValue\n    FROM FactMeasurement f\n    JOIN DimMeasurementLocation ml\n      ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n    JOIN DimMeasurementLocationType mlt\n      ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n    WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n      AND mlt.ShortName = 'Total kVA'\n    ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n    LIMIT 1\n  ) AS 'Apparent Power';",
+          "refId": "A"
+        }
+      ],
+      "title": "Power",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 10
+      },
+      "id": 102,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Output Power Calc. (HP)')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Output Power Calc. (HP)')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Output Power Calc. (HP)')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "refId": "A"
+        }
+      ],
+      "title": "Output Power (HP)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 10
+      },
+      "id": 101,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Torque, Estimated')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Torque, Estimated')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Torque, Estimated')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "refId": "A"
+        }
+      ],
+      "title": "Torque (ft-lb)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 10
+      },
+      "id": 16,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto",
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Power Factor, Average')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Power Factor, Average')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  latest.NumericValue AS value\nFROM (\n  SELECT f.NumericValue, f.MeasurementTimestampUtc\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  WHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Power Factor, Average')\n  ORDER BY f.MeasurementTimestampUtc DESC, ml.MeasurementLocationName\n  LIMIT 1\n) latest;",
+          "refId": "A"
+        }
+      ],
+      "title": "Power Factor",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "description": "Estimated energy cost for the selected segment and dashboard time range. Each Total kW snapshot is treated as a 2-minute operating interval.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 10
+      },
+      "id": 115,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "WITH configured_energy_cost AS (\n  SELECT CAST(rate.SettingValue AS REAL) AS RatePerKwh\n  FROM ApplicationSetting rate\n  JOIN ApplicationSetting currency\n    ON currency.SettingKey = 'EnergyCost.CurrencyUomUuid'\n  JOIN DimUnit currency_unit\n    ON currency_unit.UnitUuid = currency.SettingValue\n  JOIN DimUomQuantity currency_quantity\n    ON currency_quantity.UomQuantityUuid = currency_unit.UomQuantityUuid\n  WHERE rate.SettingKey = 'EnergyCost.RatePerKwh'\n    AND rate.SettingValue IS NOT NULL\n    AND trim(rate.SettingValue) <> ''\n    AND currency.SettingValue IS NOT NULL\n    AND trim(currency.SettingValue) <> ''\n    AND currency_quantity.ShortName = 'Currency'\n), power_samples AS (\n  SELECT f.NumericValue AS PowerKw\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  JOIN DimSegment segment\n    ON segment.SegmentKey = ml.SegmentKey\n  WHERE segment.SiteKey = CAST('$site' AS INTEGER)\n    AND ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Total kW')\n    AND f.NumericValue IS NOT NULL\n    AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\n)\nSELECT\n  COALESCE(SUM(power_samples.PowerKw), 0.0) * (2.0 / 60.0) * configured_energy_cost.RatePerKwh AS value\nFROM configured_energy_cost\nLEFT JOIN power_samples\n  ON 1 = 1\nGROUP BY configured_energy_cost.RatePerKwh;",
+          "queryText": "WITH configured_energy_cost AS (\n  SELECT CAST(rate.SettingValue AS REAL) AS RatePerKwh\n  FROM ApplicationSetting rate\n  JOIN ApplicationSetting currency\n    ON currency.SettingKey = 'EnergyCost.CurrencyUomUuid'\n  JOIN DimUnit currency_unit\n    ON currency_unit.UnitUuid = currency.SettingValue\n  JOIN DimUomQuantity currency_quantity\n    ON currency_quantity.UomQuantityUuid = currency_unit.UomQuantityUuid\n  WHERE rate.SettingKey = 'EnergyCost.RatePerKwh'\n    AND rate.SettingValue IS NOT NULL\n    AND trim(rate.SettingValue) <> ''\n    AND currency.SettingValue IS NOT NULL\n    AND trim(currency.SettingValue) <> ''\n    AND currency_quantity.ShortName = 'Currency'\n), power_samples AS (\n  SELECT f.NumericValue AS PowerKw\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  JOIN DimSegment segment\n    ON segment.SegmentKey = ml.SegmentKey\n  WHERE segment.SiteKey = CAST('$site' AS INTEGER)\n    AND ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Total kW')\n    AND f.NumericValue IS NOT NULL\n    AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\n)\nSELECT\n  COALESCE(SUM(power_samples.PowerKw), 0.0) * (2.0 / 60.0) * configured_energy_cost.RatePerKwh AS value\nFROM configured_energy_cost\nLEFT JOIN power_samples\n  ON 1 = 1\nGROUP BY configured_energy_cost.RatePerKwh;",
+          "queryType": "table",
+          "rawQueryText": "WITH configured_energy_cost AS (\n  SELECT CAST(rate.SettingValue AS REAL) AS RatePerKwh\n  FROM ApplicationSetting rate\n  JOIN ApplicationSetting currency\n    ON currency.SettingKey = 'EnergyCost.CurrencyUomUuid'\n  JOIN DimUnit currency_unit\n    ON currency_unit.UnitUuid = currency.SettingValue\n  JOIN DimUomQuantity currency_quantity\n    ON currency_quantity.UomQuantityUuid = currency_unit.UomQuantityUuid\n  WHERE rate.SettingKey = 'EnergyCost.RatePerKwh'\n    AND rate.SettingValue IS NOT NULL\n    AND trim(rate.SettingValue) <> ''\n    AND currency.SettingValue IS NOT NULL\n    AND trim(currency.SettingValue) <> ''\n    AND currency_quantity.ShortName = 'Currency'\n), power_samples AS (\n  SELECT f.NumericValue AS PowerKw\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  JOIN DimSegment segment\n    ON segment.SegmentKey = ml.SegmentKey\n  WHERE segment.SiteKey = CAST('$site' AS INTEGER)\n    AND ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Total kW')\n    AND f.NumericValue IS NOT NULL\n    AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\n)\nSELECT\n  COALESCE(SUM(power_samples.PowerKw), 0.0) * (2.0 / 60.0) * configured_energy_cost.RatePerKwh AS value\nFROM configured_energy_cost\nLEFT JOIN power_samples\n  ON 1 = 1\nGROUP BY configured_energy_cost.RatePerKwh;",
+          "refId": "A"
+        }
+      ],
+      "title": "Energy Cost${energy_cost_currency}",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "description": "Estimated energy cost per Grafana time bucket for the selected segment. Each Total kW snapshot is treated as a 2-minute operating interval.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 0,
+            "pointSize": 4,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 116,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "query": "WITH configured_energy_cost AS (\n  SELECT\n    CAST(rate.SettingValue AS REAL) AS RatePerKwh\n  FROM ApplicationSetting rate\n  JOIN ApplicationSetting currency\n    ON currency.SettingKey = 'EnergyCost.CurrencyUomUuid'\n  JOIN DimUnit currency_unit\n    ON currency_unit.UnitUuid = currency.SettingValue\n  JOIN DimUomQuantity currency_quantity\n    ON currency_quantity.UomQuantityUuid = currency_unit.UomQuantityUuid\n  WHERE rate.SettingKey = 'EnergyCost.RatePerKwh'\n    AND rate.SettingValue IS NOT NULL\n    AND trim(rate.SettingValue) <> ''\n    AND currency.SettingValue IS NOT NULL\n    AND trim(currency.SettingValue) <> ''\n    AND currency_quantity.ShortName = 'Currency'\n), power_samples AS (\n  SELECT\n    strftime(\n      '%Y-%m-%dT%H:%M:%SZ',\n      (\n        CAST(strftime('%s', f.MeasurementTimestampUtc) AS INTEGER)\n        / MAX(CAST(${__interval_ms} / 1000 AS INTEGER), 120)\n      )\n      * MAX(CAST(${__interval_ms} / 1000 AS INTEGER), 120),\n      'unixepoch'\n    ) AS time,\n    f.NumericValue AS PowerKw\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  JOIN DimSegment segment\n    ON segment.SegmentKey = ml.SegmentKey\n  WHERE segment.SiteKey = CAST('$site' AS INTEGER)\n    AND ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Total kW')\n    AND f.NumericValue IS NOT NULL\n    AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\n)\nSELECT\n  power_samples.time AS time,\n  'Energy Cost' AS metric,\n  SUM(power_samples.PowerKw)\n    * (2.0 / 60.0)\n    * configured_energy_cost.RatePerKwh AS value\nFROM configured_energy_cost\nJOIN power_samples\n  ON 1 = 1\nGROUP BY\n  power_samples.time,\n  configured_energy_cost.RatePerKwh\nORDER BY\n  power_samples.time ASC;",
+          "queryText": "WITH configured_energy_cost AS (\n  SELECT\n    CAST(rate.SettingValue AS REAL) AS RatePerKwh\n  FROM ApplicationSetting rate\n  JOIN ApplicationSetting currency\n    ON currency.SettingKey = 'EnergyCost.CurrencyUomUuid'\n  JOIN DimUnit currency_unit\n    ON currency_unit.UnitUuid = currency.SettingValue\n  JOIN DimUomQuantity currency_quantity\n    ON currency_quantity.UomQuantityUuid = currency_unit.UomQuantityUuid\n  WHERE rate.SettingKey = 'EnergyCost.RatePerKwh'\n    AND rate.SettingValue IS NOT NULL\n    AND trim(rate.SettingValue) <> ''\n    AND currency.SettingValue IS NOT NULL\n    AND trim(currency.SettingValue) <> ''\n    AND currency_quantity.ShortName = 'Currency'\n), power_samples AS (\n  SELECT\n    strftime(\n      '%Y-%m-%dT%H:%M:%SZ',\n      (\n        CAST(strftime('%s', f.MeasurementTimestampUtc) AS INTEGER)\n        / MAX(CAST(${__interval_ms} / 1000 AS INTEGER), 120)\n      )\n      * MAX(CAST(${__interval_ms} / 1000 AS INTEGER), 120),\n      'unixepoch'\n    ) AS time,\n    f.NumericValue AS PowerKw\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  JOIN DimSegment segment\n    ON segment.SegmentKey = ml.SegmentKey\n  WHERE segment.SiteKey = CAST('$site' AS INTEGER)\n    AND ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Total kW')\n    AND f.NumericValue IS NOT NULL\n    AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\n)\nSELECT\n  power_samples.time AS time,\n  'Energy Cost' AS metric,\n  SUM(power_samples.PowerKw)\n    * (2.0 / 60.0)\n    * configured_energy_cost.RatePerKwh AS value\nFROM configured_energy_cost\nJOIN power_samples\n  ON 1 = 1\nGROUP BY\n  power_samples.time,\n  configured_energy_cost.RatePerKwh\nORDER BY\n  power_samples.time ASC;",
+          "queryType": "table",
+          "rawQueryText": "WITH configured_energy_cost AS (\n  SELECT\n    CAST(rate.SettingValue AS REAL) AS RatePerKwh\n  FROM ApplicationSetting rate\n  JOIN ApplicationSetting currency\n    ON currency.SettingKey = 'EnergyCost.CurrencyUomUuid'\n  JOIN DimUnit currency_unit\n    ON currency_unit.UnitUuid = currency.SettingValue\n  JOIN DimUomQuantity currency_quantity\n    ON currency_quantity.UomQuantityUuid = currency_unit.UomQuantityUuid\n  WHERE rate.SettingKey = 'EnergyCost.RatePerKwh'\n    AND rate.SettingValue IS NOT NULL\n    AND trim(rate.SettingValue) <> ''\n    AND currency.SettingValue IS NOT NULL\n    AND trim(currency.SettingValue) <> ''\n    AND currency_quantity.ShortName = 'Currency'\n), power_samples AS (\n  SELECT\n    strftime(\n      '%Y-%m-%dT%H:%M:%SZ',\n      (\n        CAST(strftime('%s', f.MeasurementTimestampUtc) AS INTEGER)\n        / MAX(CAST(${__interval_ms} / 1000 AS INTEGER), 120)\n      )\n      * MAX(CAST(${__interval_ms} / 1000 AS INTEGER), 120),\n      'unixepoch'\n    ) AS time,\n    f.NumericValue AS PowerKw\n  FROM FactMeasurement f\n  JOIN DimMeasurementLocation ml\n    ON ml.MeasurementLocationKey = f.MeasurementLocationKey\n  JOIN DimMeasurementLocationType mlt\n    ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\n  JOIN DimSegment segment\n    ON segment.SegmentKey = ml.SegmentKey\n  WHERE segment.SiteKey = CAST('$site' AS INTEGER)\n    AND ml.SegmentKey = CAST('$segment' AS INTEGER)\n    AND mlt.ShortName IN ('Total kW')\n    AND f.NumericValue IS NOT NULL\n    AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\n)\nSELECT\n  power_samples.time AS time,\n  'Energy Cost' AS metric,\n  SUM(power_samples.PowerKw)\n    * (2.0 / 60.0)\n    * configured_energy_cost.RatePerKwh AS value\nFROM configured_energy_cost\nJOIN power_samples\n  ON 1 = 1\nGROUP BY\n  power_samples.time,\n  configured_energy_cost.RatePerKwh\nORDER BY\n  power_samples.time ASC;",
+          "refId": "A",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "title": "Energy Cost${energy_cost_currency}",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "suffix: kW"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "query": "SELECT\n  f.MeasurementTimestampUtc AS time,\n  ml.MeasurementLocationName AS metric,\n  f.NumericValue AS value\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimMeasurementLocationType mlt\n  ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\nWHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n  AND mlt.ShortName IN ('Total kW')\n  AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\nORDER BY f.MeasurementTimestampUtc ASC, ml.MeasurementLocationName;",
+          "queryText": "SELECT\n  f.MeasurementTimestampUtc AS time,\n  ml.MeasurementLocationName AS metric,\n  f.NumericValue AS value\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimMeasurementLocationType mlt\n  ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\nWHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n  AND mlt.ShortName IN ('Total kW')\n  AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\nORDER BY f.MeasurementTimestampUtc ASC, ml.MeasurementLocationName;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  f.MeasurementTimestampUtc AS time,\n  ml.MeasurementLocationName AS metric,\n  f.NumericValue AS value\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimMeasurementLocationType mlt\n  ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\nWHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n  AND mlt.ShortName IN ('Total kW')\n  AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\nORDER BY f.MeasurementTimestampUtc ASC, ml.MeasurementLocationName;",
+          "refId": "A",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "title": "Power Trend",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "suffix: RPM"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 22
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "query": "SELECT\n  f.MeasurementTimestampUtc AS time,\n  ml.MeasurementLocationName AS metric,\n  f.NumericValue AS value\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimMeasurementLocationType mlt\n  ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\nWHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n  AND mlt.ShortName IN ('Speed RPM, Estimated', 'Speed', 'Speed, Shaft')\n  AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\nORDER BY f.MeasurementTimestampUtc ASC;",
+          "queryText": "SELECT\n  f.MeasurementTimestampUtc AS time,\n  ml.MeasurementLocationName AS metric,\n  f.NumericValue AS value\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimMeasurementLocationType mlt\n  ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\nWHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n  AND mlt.ShortName IN ('Speed RPM, Estimated', 'Speed', 'Speed, Shaft')\n  AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\nORDER BY f.MeasurementTimestampUtc ASC;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  f.MeasurementTimestampUtc AS time,\n  ml.MeasurementLocationName AS metric,\n  f.NumericValue AS value\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimMeasurementLocationType mlt\n  ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\nWHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n  AND mlt.ShortName IN ('Speed RPM, Estimated', 'Speed', 'Speed, Shaft')\n  AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\nORDER BY f.MeasurementTimestampUtc ASC;",
+          "refId": "A",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "title": "Speed Trend",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 22
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "query": "SELECT\n  f.MeasurementTimestampUtc AS time,\n  f.NumericValue AS 'Load / %FLA'\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimMeasurementLocationType mlt\n  ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\nWHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n  AND mlt.ShortName IN ('Load, Full Load Percentage')\n  AND ml.ValueClass = 'Percentage'\n  AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\nORDER BY f.MeasurementTimestampUtc ASC;",
+          "queryText": "SELECT\n  f.MeasurementTimestampUtc AS time,\n  f.NumericValue AS 'Load / %FLA'\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimMeasurementLocationType mlt\n  ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\nWHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n  AND mlt.ShortName IN ('Load, Full Load Percentage')\n  AND ml.ValueClass = 'Percentage'\n  AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\nORDER BY f.MeasurementTimestampUtc ASC;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  f.MeasurementTimestampUtc AS time,\n  f.NumericValue AS 'Load / %FLA'\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimMeasurementLocationType mlt\n  ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\nWHERE ml.SegmentKey = CAST('$segment' AS INTEGER)\n  AND mlt.ShortName IN ('Load, Full Load Percentage')\n  AND ml.ValueClass = 'Percentage'\n  AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\nORDER BY f.MeasurementTimestampUtc ASC;",
+          "refId": "A",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "title": "Load / %FLA Trend",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "id": 103,
+      "panels": [],
+      "title": "Inrush / Startup",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 0,
+            "pointSize": 4,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "suffix: A"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 31
+      },
+      "id": 104,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "query": "SELECT\n  f.MeasurementTimestampUtc AS time,\n  'Startup Current' AS metric,\n  f.NumericValue AS value\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimMeasurementLocationType mlt\n  ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\nJOIN DimSegment segment\n  ON segment.SegmentKey = ml.SegmentKey\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER)\n  AND ml.SegmentKey = CAST('$segment' AS INTEGER)\n  AND mlt.ShortName = 'Current, Startup'\n  AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\nORDER BY f.MeasurementTimestampUtc ASC;",
+          "queryText": "SELECT\n  f.MeasurementTimestampUtc AS time,\n  'Startup Current' AS metric,\n  f.NumericValue AS value\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimMeasurementLocationType mlt\n  ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\nJOIN DimSegment segment\n  ON segment.SegmentKey = ml.SegmentKey\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nWHERE site.SiteKey = CAST('1' AS INTEGER)\n  AND ml.SegmentKey = CAST('1' AS INTEGER)\n  AND mlt.ShortName = 'Current, Startup'\n  AND f.MeasurementTimestampUtc BETWEEN '2026-08-04T18:34:21.488Z' AND '2026-08-05T18:34:21.488Z'\nORDER BY f.MeasurementTimestampUtc ASC;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  f.MeasurementTimestampUtc AS time,\n  'Startup Current' AS metric,\n  f.NumericValue AS value\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimMeasurementLocationType mlt\n  ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\nJOIN DimSegment segment\n  ON segment.SegmentKey = ml.SegmentKey\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER)\n  AND ml.SegmentKey = CAST('$segment' AS INTEGER)\n  AND mlt.ShortName = 'Current, Startup'\n  AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\nORDER BY f.MeasurementTimestampUtc ASC;",
+          "refId": "A",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "title": "Startup Current",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "${ds_sqlite}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 0,
+            "pointSize": 4,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "suffix: s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 31
+      },
+      "id": 105,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.6.16",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "${ds_sqlite}"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "query": "SELECT\n  f.MeasurementTimestampUtc AS time,\n  'Startup Delta' AS metric,\n  f.NumericValue AS value\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimMeasurementLocationType mlt\n  ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\nJOIN DimSegment segment\n  ON segment.SegmentKey = ml.SegmentKey\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER)\n  AND ml.SegmentKey = CAST('$segment' AS INTEGER)\n  AND mlt.ShortName = 'Current, Startup, Delta'\n  AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\nORDER BY f.MeasurementTimestampUtc ASC;",
+          "queryText": "SELECT\n  f.MeasurementTimestampUtc AS time,\n  'Startup Delta' AS metric,\n  f.NumericValue AS value\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimMeasurementLocationType mlt\n  ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\nJOIN DimSegment segment\n  ON segment.SegmentKey = ml.SegmentKey\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nWHERE site.SiteKey = CAST('1' AS INTEGER)\n  AND ml.SegmentKey = CAST('1' AS INTEGER)\n  AND mlt.ShortName = 'Current, Startup, Delta'\n  AND f.MeasurementTimestampUtc BETWEEN '2026-08-04T18:34:21.488Z' AND '2026-08-05T18:34:21.488Z'\nORDER BY f.MeasurementTimestampUtc ASC;",
+          "queryType": "table",
+          "rawQueryText": "SELECT\n  f.MeasurementTimestampUtc AS time,\n  'Startup Delta' AS metric,\n  f.NumericValue AS value\nFROM FactMeasurement f\nJOIN DimMeasurementLocation ml\n  ON ml.MeasurementLocationKey = f.MeasurementLocationKey\nJOIN DimMeasurementLocationType mlt\n  ON mlt.MeasurementLocationTypeKey = ml.MeasurementLocationTypeKey\nJOIN DimSegment segment\n  ON segment.SegmentKey = ml.SegmentKey\nJOIN DimSite site\n  ON site.SiteKey = segment.SiteKey\nWHERE site.SiteKey = CAST('$site' AS INTEGER)\n  AND ml.SegmentKey = CAST('$segment' AS INTEGER)\n  AND mlt.ShortName = 'Current, Startup, Delta'\n  AND f.MeasurementTimestampUtc BETWEEN '${__from:date}' AND '${__to:date}'\nORDER BY f.MeasurementTimestampUtc ASC;",
+          "refId": "A",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "title": "Startup Delta",
+      "type": "timeseries"
+    }
+  ],
+  "preload": false,
+  "refresh": "1m",
+  "schemaVersion": 41,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "frser-sqlite-datasource",
+          "value": "dfu2imqa8z11cd"
+        },
+        "includeAll": false,
+        "label": "SQLite datasource",
+        "name": "ds_sqlite",
+        "options": [],
+        "query": "frser-sqlite-datasource",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "text": "Select a site",
+          "value": ""
+        },
+        "datasource": {
+          "type": "frser-sqlite-datasource",
+          "uid": "${ds_sqlite}"
+        },
+        "definition": "SELECT\n  SiteName AS __text,\n  SiteKey AS __value\nFROM DimSite\nORDER BY SiteName;",
+        "includeAll": false,
+        "label": "Site",
+        "name": "site",
+        "options": [],
+        "query": "SELECT\n  SiteName AS __text,\n  SiteKey AS __value\nFROM DimSite\nORDER BY SiteName;",
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "Select a segment",
+          "value": ""
+        },
+        "datasource": {
+          "type": "frser-sqlite-datasource",
+          "uid": "${ds_sqlite}"
+        },
+        "definition": "SELECT\n  SegmentName AS __text,\n  SegmentKey AS __value\nFROM DimSegment\nWHERE SiteKey = CAST('$site' AS INTEGER)\nORDER BY SegmentName;",
+        "includeAll": false,
+        "label": "Segment",
+        "name": "segment",
+        "options": [],
+        "query": "SELECT\n  SegmentName AS __text,\n  SegmentKey AS __value\nFROM DimSegment\nWHERE SiteKey = CAST('$site' AS INTEGER)\nORDER BY SegmentName;",
+        "refresh": 2,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "datasource": {
+          "type": "frser-sqlite-datasource",
+          "uid": "${ds_sqlite}"
+        },
+        "definition": "WITH configured_currency AS (\n  SELECT currency_unit.ShortName AS CurrencyName\n  FROM ApplicationSetting currency\n  JOIN DimUnit currency_unit\n    ON currency_unit.UnitUuid = currency.SettingValue\n  JOIN DimUomQuantity currency_quantity\n    ON currency_quantity.UomQuantityUuid = currency_unit.UomQuantityUuid\n  WHERE currency.SettingKey = 'EnergyCost.CurrencyUomUuid'\n    AND currency.SettingValue IS NOT NULL\n    AND trim(currency.SettingValue) <> ''\n    AND currency_quantity.ShortName = 'Currency'\n  LIMIT 1\n)\nSELECT\n  COALESCE((SELECT ' (' || CurrencyName || ')' FROM configured_currency), '') AS __text,\n  COALESCE((SELECT ' (' || CurrencyName || ')' FROM configured_currency), '') AS __value;",
+        "hide": 2,
+        "includeAll": false,
+        "label": "Energy Cost Currency",
+        "name": "energy_cost_currency",
+        "options": [],
+        "query": "WITH configured_currency AS (\n  SELECT currency_unit.ShortName AS CurrencyName\n  FROM ApplicationSetting currency\n  JOIN DimUnit currency_unit\n    ON currency_unit.UnitUuid = currency.SettingValue\n  JOIN DimUomQuantity currency_quantity\n    ON currency_quantity.UomQuantityUuid = currency_unit.UomQuantityUuid\n  WHERE currency.SettingKey = 'EnergyCost.CurrencyUomUuid'\n    AND currency.SettingValue IS NOT NULL\n    AND trim(currency.SettingValue) <> ''\n    AND currency_quantity.ShortName = 'Currency'\n  LIMIT 1\n)\nSELECT\n  COALESCE((SELECT ' (' || CurrencyName || ')' FROM configured_currency), '') AS __text,\n  COALESCE((SELECT ' (' || CurrencyName || ')' FROM configured_currency), '') AS __value;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": true,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "MCEGold Operations",
+  "uid": "bfvnuobjmh3wgc",
+  "version": 1
+}

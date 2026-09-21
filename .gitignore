@@ -1,0 +1,51 @@
+# Python environments and caches
+.venv/
+venv/
+env/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Build/package output
+build/
+dist/
+*.egg-info/
+
+# Coverage and tooling caches
+.coverage
+coverage.xml
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Local databases and SQLite sidecars
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+*.db-wal
+*.db-shm
+
+# Logs
+logs/
+*.log
+
+# Local configuration and secrets
+configs/connector.config.json
+configs/portal.local.json
+.env
+.env.*
+*.local.json
+
+# Binary payloads are not part of the public Portal source
+*.pdb
+*.dll
+*.exe
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+Desktop.ini

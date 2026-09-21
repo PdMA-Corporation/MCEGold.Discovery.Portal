@@ -1,0 +1,187 @@
+{
+  "schemaVersion": "1.0",
+  "generatedFrom": "MCEGold.Data.Services.Connector and MCEGold.Data.Services.Connector.Toolkit",
+  "requestTypes": [
+    {
+      "name": "GetSites",
+      "cliCommand": "request post --type get-sites",
+      "connectorCommand": "PostGetSitesRequest",
+      "portalLevel": "Site",
+      "supportedInCli": true,
+      "pythonSample": "samples/python/06_post_request.py",
+      "examplePayload": "payloads/requests/get-sites.example.json",
+      "fields": [
+        { "name": "RequestType", "jsonPath": "requestType", "type": "enum-string", "required": true, "cardinality": "single", "validation": "must equal GetSites and match --type get-sites", "portalUse": "request-discriminator", "mappedBodPath": null },
+        { "name": "MaxItems", "jsonPath": "maxItems", "type": "integer", "required": false, "cardinality": "single", "validation": "0..32767", "portalUse": "optional-limit", "mappedBodPath": "DataArea.Get.MaxItems" },
+        { "name": "SiteUuid", "jsonPath": "filters.siteUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "exact-site-filter", "mappedBodPath": "DataArea.SitesCriteria[0].UUID.UUIDFilter.Value" }
+      ],
+      "notes": [
+        "The underlying GetSites criteria has a default TypeUUID filter, but filters.typeUuid is explicitly rejected for GetSites short form.",
+        "lastNData exists on the shared DTO but is not mapped for GetSites and is therefore not supported by this manifest."
+      ]
+    },
+    {
+      "name": "GetSegments",
+      "cliCommand": "request post --type get-segments",
+      "connectorCommand": "PostGetSegmentsRequest",
+      "portalLevel": "Segment",
+      "supportedInCli": true,
+      "pythonSample": "samples/python/06_post_request.py",
+      "examplePayload": "payloads/requests/get-segments.example.json",
+      "fields": [
+        { "name": "RequestType", "jsonPath": "requestType", "type": "enum-string", "required": true, "cardinality": "single", "validation": "must equal GetSegments and match --type get-segments", "portalUse": "request-discriminator", "mappedBodPath": null },
+        { "name": "MaxItems", "jsonPath": "maxItems", "type": "integer", "required": false, "cardinality": "single", "validation": "0..32767", "portalUse": "optional-limit", "mappedBodPath": "DataArea.Get.MaxItems" },
+        { "name": "SiteUuid", "jsonPath": "filters.siteUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "parent-site-context", "mappedBodPath": "DataArea.SegmentsCriteria[0].SiteUUID[0].Value" },
+        { "name": "SegmentUuid", "jsonPath": "filters.segmentUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "exact-segment-filter", "mappedBodPath": "DataArea.SegmentsCriteria[0].UUID.UUIDFilter.Value" },
+        { "name": "TypeUuid", "jsonPath": "filters.typeUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "segment-type-filter", "mappedBodPath": "DataArea.SegmentsCriteria[0].TypeUUID.UUIDFilter.Value" }
+      ],
+      "notes": ["AssetUuid is not supported for GetSegments short form.", "lastNData is not mapped for GetSegments."]
+    },
+    {
+      "name": "GetAssets",
+      "cliCommand": "request post --type get-assets",
+      "connectorCommand": "PostGetAssetsRequest",
+      "portalLevel": "Future Asset",
+      "supportedInCli": true,
+      "pythonSample": "samples/python/06_post_request.py",
+      "examplePayload": "payloads/requests/get-assets.example.json",
+      "fields": [
+        { "name": "RequestType", "jsonPath": "requestType", "type": "enum-string", "required": true, "cardinality": "single", "validation": "must equal GetAssets and match --type get-assets", "portalUse": "request-discriminator", "mappedBodPath": null },
+        { "name": "MaxItems", "jsonPath": "maxItems", "type": "integer", "required": false, "cardinality": "single", "validation": "0..32767", "portalUse": "optional-limit", "mappedBodPath": "DataArea.Get.MaxItems" },
+        { "name": "AssetUuid", "jsonPath": "filters.assetUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "future-exact-asset-filter", "mappedBodPath": "DataArea.AssetsCriteria[0].UUID.UUIDFilter.Value" },
+        { "name": "SiteUuid", "jsonPath": "filters.siteUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "future-parent-site-context", "mappedBodPath": "DataArea.AssetsCriteria[0].SiteUUID[0].Value" },
+        { "name": "TypeUuid", "jsonPath": "filters.typeUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "future-asset-type-filter", "mappedBodPath": "DataArea.AssetsCriteria[0].TypeUUID.UUIDFilter.Value" },
+        { "name": "SerialNumber", "jsonPath": "filters.serialNumber", "type": "string", "required": false, "cardinality": "single", "validation": "non-blank value is trimmed; no additional constraint", "portalUse": "future-serial-number-filter", "mappedBodPath": "DataArea.AssetsCriteria[0].SerialNumber[0].Value" }
+      ],
+      "notes": ["Implemented in CLI and the generic Python post sample, but intentionally outside the current portal workflow."]
+    },
+    {
+      "name": "GetMeasurementLocations",
+      "cliCommand": "request post --type get-measurement-locations",
+      "connectorCommand": "PostGetMeasurementLocationsRequest",
+      "portalLevel": "Measurement Location",
+      "supportedInCli": true,
+      "pythonSample": "samples/python/06_post_request.py",
+      "examplePayload": "payloads/requests/get-measurement-locations.example.json",
+      "fields": [
+        { "name": "RequestType", "jsonPath": "requestType", "type": "enum-string", "required": true, "cardinality": "single", "validation": "must equal GetMeasurementLocations and match --type get-measurement-locations", "portalUse": "request-discriminator", "mappedBodPath": null },
+        { "name": "MaxItems", "jsonPath": "maxItems", "type": "integer", "required": false, "cardinality": "single", "validation": "0..32767", "portalUse": "optional-limit", "mappedBodPath": "DataArea.Get.MaxItems" },
+        { "name": "MeasurementLocationUuid", "jsonPath": "filters.measurementLocationUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "exact-location-filter", "mappedBodPath": "DataArea.MeasurementLocationsCriteria[0].UUID.UUIDFilter.Value" },
+        { "name": "SiteUuid", "jsonPath": "filters.siteUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "ancestor-site-context", "mappedBodPath": "DataArea.MeasurementLocationsCriteria[0].SiteUUID[0].Value" },
+        { "name": "SegmentUuid", "jsonPath": "filters.segmentUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "parent-segment-context", "mappedBodPath": "DataArea.MeasurementLocationsCriteria[0].SegmentUUID.UUIDFilter.Value" },
+        { "name": "TypeUuid", "jsonPath": "filters.typeUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "location-type-filter", "mappedBodPath": "DataArea.MeasurementLocationsCriteria[0].TypeUUID.UUIDFilter.Value" }
+      ],
+      "notes": ["AssetUuid is intentionally not supported because the existing criteria mapper does not wire it through."]
+    },
+    {
+      "name": "GetMeasurements",
+      "cliCommand": "request post --type get-measurements",
+      "connectorCommand": "PostGetMeasurementsRequest",
+      "portalLevel": "Measurements",
+      "supportedInCli": true,
+      "pythonSample": "samples/python/06_post_request.py",
+      "examplePayload": "payloads/requests/get-measurements.example.json",
+      "fields": [
+        { "name": "RequestType", "jsonPath": "requestType", "type": "enum-string", "required": true, "cardinality": "single", "validation": "must equal GetMeasurements and match --type get-measurements", "portalUse": "request-discriminator", "mappedBodPath": null },
+        { "name": "MaxItems", "jsonPath": "maxItems", "type": "integer", "required": false, "cardinality": "single", "validation": "0..32767", "portalUse": "result-limit", "mappedBodPath": "DataArea.Get.MaxItems" },
+        { "name": "LastNData", "jsonPath": "lastNData", "type": "integer", "required": false, "cardinality": "single", "validation": "0..32767", "portalUse": "recent-data-limit", "mappedBodPath": "ApplicationArea.UserArea.LastNData" },
+        { "name": "MeasurementLocationUuid", "jsonPath": "filters.measurementLocationUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "parent-location-context", "mappedBodPath": "DataArea.MeasurementsCriteria[0].MeasurementLocationUUID.UUIDFilter.Value" },
+        { "name": "SegmentUuid", "jsonPath": "filters.segmentUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "ancestor-segment-context", "mappedBodPath": "DataArea.MeasurementsCriteria[0].SegmentUUID.UUIDFilter.Value" },
+        { "name": "RecordedFrom", "jsonPath": "filters.recordedFrom", "type": "date-time", "required": false, "cardinality": "single", "validation": "parseable DateTimeOffset; must be <= recordedTo", "portalUse": "recorded-time-min", "mappedBodPath": "DataArea.MeasurementsCriteria[0].Recorded[MinInclusive].Value" },
+        { "name": "RecordedTo", "jsonPath": "filters.recordedTo", "type": "date-time", "required": false, "cardinality": "single", "validation": "parseable DateTimeOffset; must be >= recordedFrom", "portalUse": "recorded-time-max", "mappedBodPath": "DataArea.MeasurementsCriteria[0].Recorded[MaxInclusive].Value" }
+      ],
+      "notes": ["Measurement type, unit, site UUID, asset UUID, measurement UUID, text, numeric, and status filters are not exposed by this short form."]
+    },
+    {
+      "name": "GetAssessments",
+      "cliCommand": "request post --type get-assessments",
+      "connectorCommand": "PostGetAssessmentsRequest",
+      "portalLevel": "Future Assessments",
+      "supportedInCli": true,
+      "pythonSample": "samples/python/06_post_request.py",
+      "examplePayload": "payloads/requests/get-assessments.example.json",
+      "fields": [
+        { "name": "RequestType", "jsonPath": "requestType", "type": "enum-string", "required": true, "cardinality": "single", "validation": "must equal GetAssessments and match --type get-assessments", "portalUse": "request-discriminator", "mappedBodPath": null },
+        { "name": "MaxItems", "jsonPath": "maxItems", "type": "integer", "required": false, "cardinality": "single", "validation": "0..32767", "portalUse": "future-result-limit", "mappedBodPath": "DataArea.Get.MaxItems" },
+        { "name": "LastNData", "jsonPath": "lastNData", "type": "integer", "required": false, "cardinality": "single", "validation": "0..32767", "portalUse": "future-recent-data-limit", "mappedBodPath": "ApplicationArea.UserArea.LastNData" },
+        { "name": "AssetUuid", "jsonPath": "filters.assetUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "future-parent-asset-context", "mappedBodPath": "DataArea.AssessmentsCriteria[0].AssetUUID.UUIDFilter.Value" },
+        { "name": "HealthLevelTypeUuid", "jsonPath": "filters.healthLevelTypeUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "future-health-type-filter", "mappedBodPath": "DataArea.AssessmentsCriteria[0].HealthLevelTypeUUID.UUIDFilter.Value" },
+        { "name": "AssessedFrom", "jsonPath": "filters.assessedFrom", "type": "date-time", "required": false, "cardinality": "single", "validation": "parseable DateTimeOffset; must be <= assessedTo; normalized to UTC", "portalUse": "future-assessed-time-min", "mappedBodPath": "DataArea.AssessmentsCriteria[0].Assessed[MinInclusive].Value" },
+        { "name": "AssessedTo", "jsonPath": "filters.assessedTo", "type": "date-time", "required": false, "cardinality": "single", "validation": "parseable DateTimeOffset; must be >= assessedFrom; normalized to UTC", "portalUse": "future-assessed-time-max", "mappedBodPath": "DataArea.AssessmentsCriteria[0].Assessed[MaxInclusive].Value" },
+        { "name": "HealthLevelMin", "jsonPath": "filters.healthLevelMin", "type": "number", "required": false, "cardinality": "single", "validation": "finite number; must be <= healthLevelMax", "portalUse": "future-health-min", "mappedBodPath": "DataArea.AssessmentsCriteria[0].HealthLevelPrecise[MinInclusive].Value" },
+        { "name": "HealthLevelMax", "jsonPath": "filters.healthLevelMax", "type": "number", "required": false, "cardinality": "single", "validation": "finite number; must be >= healthLevelMin", "portalUse": "future-health-max", "mappedBodPath": "DataArea.AssessmentsCriteria[0].HealthLevelPrecise[MaxInclusive].Value" }
+      ],
+      "notes": ["Site, segment, measurement-location, assessment UUID, status, and severity filters are not exposed."]
+    },
+    {
+      "name": "GetAssetSegmentEvents",
+      "cliCommand": "request post --type get-asset-segment-events",
+      "connectorCommand": "PostGetAssetSegmentEventsRequest",
+      "portalLevel": "Future Asset Events",
+      "supportedInCli": true,
+      "pythonSample": "samples/python/06_post_request.py",
+      "examplePayload": "payloads/requests/get-asset-segment-events.example.json",
+      "fields": [
+        { "name": "RequestType", "jsonPath": "requestType", "type": "enum-string", "required": true, "cardinality": "single", "validation": "must equal GetAssetSegmentEvents and match --type get-asset-segment-events", "portalUse": "request-discriminator", "mappedBodPath": null },
+        { "name": "MaxItems", "jsonPath": "maxItems", "type": "integer", "required": false, "cardinality": "single", "validation": "0..32767", "portalUse": "future-result-limit", "mappedBodPath": "DataArea.Get.MaxItems" },
+        { "name": "LastNData", "jsonPath": "lastNData", "type": "integer", "required": false, "cardinality": "single", "validation": "0..32767", "portalUse": "future-recent-data-limit", "mappedBodPath": "ApplicationArea.UserArea.LastNData" },
+        { "name": "EventUuid", "jsonPath": "filters.eventUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "future-event-filter", "mappedBodPath": "DataArea.AssetSegmentEventsCriteria[0].UUID.UUIDFilter.Value" },
+        { "name": "SiteUuid", "jsonPath": "filters.siteUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "future-site-context", "mappedBodPath": "DataArea.AssetSegmentEventsCriteria[0].SiteUUID[0].Value" },
+        { "name": "SegmentUuid", "jsonPath": "filters.segmentUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "future-segment-context", "mappedBodPath": "DataArea.AssetSegmentEventsCriteria[0].SegmentUUID.UUIDFilter.Value" },
+        { "name": "AssetUuid", "jsonPath": "filters.assetUuid", "type": "uuid", "required": false, "cardinality": "single", "validation": "valid UUID", "portalUse": "future-asset-context", "mappedBodPath": "DataArea.AssetSegmentEventsCriteria[0].AssetUUID.UUIDFilter.Value" },
+        { "name": "SerialNumber", "jsonPath": "filters.serialNumber", "type": "string", "required": false, "cardinality": "single", "validation": "non-blank value is trimmed; no additional constraint", "portalUse": "future-serial-number-filter", "mappedBodPath": "DataArea.AssetSegmentEventsCriteria[0].AssetSerialNumber[0].Value" },
+        { "name": "InstalledNow", "jsonPath": "filters.installedNow", "type": "boolean", "required": false, "cardinality": "single", "validation": "true, false, or omitted/null", "portalUse": "future-installed-state-filter", "mappedBodPath": "DataArea.AssetSegmentEventsCriteria[0].InstalledNow[0].Value" },
+        { "name": "InstalledFrom", "jsonPath": "filters.installedFrom", "type": "date-time", "required": false, "cardinality": "single", "validation": "parseable DateTimeOffset; must be <= installedTo; normalized to UTC", "portalUse": "future-installed-time-min", "mappedBodPath": "DataArea.AssetSegmentEventsCriteria[0].Installed[MinInclusive].Value" },
+        { "name": "InstalledTo", "jsonPath": "filters.installedTo", "type": "date-time", "required": false, "cardinality": "single", "validation": "parseable DateTimeOffset; must be >= installedFrom; normalized to UTC", "portalUse": "future-installed-time-max", "mappedBodPath": "DataArea.AssetSegmentEventsCriteria[0].Installed[MaxInclusive].Value" },
+        { "name": "RemovedFrom", "jsonPath": "filters.removedFrom", "type": "date-time", "required": false, "cardinality": "single", "validation": "parseable DateTimeOffset; must be <= removedTo; normalized to UTC", "portalUse": "future-removed-time-min", "mappedBodPath": "DataArea.AssetSegmentEventsCriteria[0].Removed[MinInclusive].Value" },
+        { "name": "RemovedTo", "jsonPath": "filters.removedTo", "type": "date-time", "required": false, "cardinality": "single", "validation": "parseable DateTimeOffset; must be >= removedFrom; normalized to UTC", "portalUse": "future-removed-time-max", "mappedBodPath": "DataArea.AssetSegmentEventsCriteria[0].Removed[MaxInclusive].Value" }
+      ],
+      "notes": ["All fields are single-valued even where underlying criteria containers are lists.", "Event type, status, severity, type UUID, measurement-location UUID, and numeric health/measurement filters are not exposed."]
+    }
+  ],
+  "portalWorkflow": [
+    {
+      "level": "Site",
+      "requestType": "GetSites",
+      "phase2Filters": ["filters.siteUuid", "maxItems"],
+      "localOnlyFilters": [
+        { "name": "siteType", "portalLocalOnly": true, "recommendation": "Keep as a local post-response filter only if the returned site representation reliably contains type; it cannot currently be sent through short-form CLI." },
+        { "name": "status", "portalLocalOnly": true, "recommendation": "Remove or keep local-only before connector integration; no CLI short-form status filter exists." },
+        { "name": "search", "portalLocalOnly": true, "recommendation": "Keep as local post-response name search with clear UI labeling." }
+      ]
+    },
+    {
+      "level": "Segment",
+      "requestType": "GetSegments",
+      "phase2Filters": ["filters.siteUuid", "filters.segmentUuid", "filters.typeUuid", "maxItems"],
+      "localOnlyFilters": [
+        { "name": "segmentTypeName", "portalLocalOnly": true, "recommendation": "Replace with typeUuid for server-side filtering, or retain type-name matching locally." },
+        { "name": "status", "portalLocalOnly": true, "recommendation": "Remove or keep local-only; no CLI short-form status filter exists." },
+        { "name": "search", "portalLocalOnly": true, "recommendation": "Keep as local post-response name search." }
+      ],
+      "futureFilters": ["Asset context is future portal scope; assetUuid is not supported by GetSegments short form."]
+    },
+    {
+      "level": "Measurement Location",
+      "requestType": "GetMeasurementLocations",
+      "phase2Filters": ["filters.siteUuid", "filters.segmentUuid", "filters.measurementLocationUuid", "filters.typeUuid", "maxItems"],
+      "localOnlyFilters": [
+        { "name": "locationTypeName", "portalLocalOnly": true, "recommendation": "Replace with typeUuid for server-side filtering, or retain type-name matching locally." },
+        { "name": "status", "portalLocalOnly": true, "recommendation": "Remove or keep local-only; no CLI short-form status filter exists." },
+        { "name": "search", "portalLocalOnly": true, "recommendation": "Keep as local post-response name search." }
+      ],
+      "futureFilters": ["assetUuid is not supported for GetMeasurementLocations even though Asset is future portal scope."]
+    },
+    {
+      "level": "Measurements",
+      "requestType": "GetMeasurements",
+      "phase2Filters": ["filters.measurementLocationUuid", "filters.segmentUuid", "filters.recordedFrom", "filters.recordedTo", "lastNData", "maxItems"],
+      "localOnlyFilters": [
+        { "name": "measurementType", "portalLocalOnly": true, "recommendation": "Keep local-only or remove until CLI support exists." },
+        { "name": "unit", "portalLocalOnly": true, "recommendation": "Keep as local post-response filtering if units are present in results." },
+        { "name": "status", "portalLocalOnly": true, "recommendation": "Remove or keep local-only; no CLI short-form status filter exists." },
+        { "name": "search", "portalLocalOnly": true, "recommendation": "Keep as local post-response name search." }
+      ]
+    }
+  ]
+}

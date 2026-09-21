@@ -1,0 +1,10 @@
+{% set session = discovery_session %}
+<div class="d-flex flex-wrap align-items-center gap-2 small">
+  <span class="badge rounded-pill {% if session.active %}text-bg-success{% else %}text-bg-secondary{% endif %}">
+    Discovery Session: {% if session.active %}Active{% else %}Inactive{% endif %}
+  </span>
+  {% if session.active and session.shortSessionId %}
+    <span class="badge rounded-pill text-bg-light text-dark border">Request Session ID: {{ session.shortSessionId }}</span>
+  {% endif %}
+</div>
+

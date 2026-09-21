@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Select Segment | {{ settings.app_name }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="/discovery/sites">Discovery</a></li><li class="breadcrumb-item"><a href="/discovery/sites">Sites</a></li><li class="breadcrumb-item">{{ site.site_name }}</li><li class="breadcrumb-item active">Segments</li></ol></nav>
+<div class="row g-4"><div class="col-lg-3">{% set active_step = 2 %}{% include "_workflow_sidebar.html" %}</div><div class="col-lg-9">
+  {% set page_title = "Select Segment" %}{% include "_discovery_page_header.html" %}
+  <p class="text-secondary mt-2">Choose a segment to view measurement locations.</p>
+  {% if validation_error %}<div class="alert alert-warning">{{ validation_error }}</div>{% endif %}
+  <div class="context-summary row g-3 mb-3"><div class="col-md-4"><span>Site Name</span><strong>{{ site.site_name }}</strong></div><div class="col-md-4"><span>Site Type</span><strong>{{ site.site_type }}</strong></div><div class="col-md-4"><span>Site UUID</span><strong class="small">{{ site.site_uuid }}</strong></div></div>
+  <div class="selection-bar mb-4"><strong>Current selection:</strong> Site: {{ site.site_name }} <span>-></span> Segment: Not selected</div>
+  <form class="card filter-panel border-0 shadow-sm mb-4" method="get"><div class="card-body"><div class="row g-3 align-items-end">
+    <div class="col-md-5"><label class="form-label" for="segment_type_uuid">Segment Type</label><select class="form-select" id="segment_type_uuid" name="segment_type_uuid"><option value="">All types</option>{% for item in segment_types %}<option value="{{ item.uuid }}" {% if filters.segment_type_uuid == item.uuid %}selected{% endif %}>{{ item.display_name }}</option>{% endfor %}</select></div>
+    <div class="col-md-3"><label class="form-label" for="max_items">Max Items</label><select class="form-select" id="max_items" name="max_items">{% for item in max_item_options %}<option value="{{ item }}" {% if filters.max_items == item|string %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></div>
+    <div class="col-md-4 d-flex gap-2"><button class="btn btn-primary" type="submit" name="searched" value="true">Search</button><a class="btn btn-outline-secondary" href="/discovery/sites/{{ site.site_uuid }}/segments">Clear</a></div>
+  </div></div></form>
+  {% if connector_error %}<div class="alert alert-warning small"><strong>Could not load segments.</strong><div>{{ connector_error.message }}</div>{% if connector_error.exitCode is not none %}<div>Exit code: {{ connector_error.exitCode }}</div>{% endif %}{% if connector_error.fault %}<div>Fault: {{ connector_error.fault.code or 'UnknownFault' }}{% if connector_error.fault.message %} - {{ connector_error.fault.message }}{% endif %}</div>{% endif %}</div>{% endif %}
+  <div class="table-responsive card border-0 shadow-sm"><table class="table table-hover align-middle mb-0"><thead><tr><th>Segment Name</th><th>Segment Type</th><th>Action</th></tr></thead><tbody>
+  {% if not results_requested %}<tr><td colspan="3" class="text-center text-secondary py-4">Set filters and click Search to find segments for this site.</td></tr>{% else %}{% for item in segments %}<tr><td class="fw-semibold">{{ item.segment_name }}</td><td><span class="badge text-bg-secondary text-truncate d-inline-block" style="max-width: 24rem;" title="{{ item.segment_type }}">{{ item.segment_type }}</span></td><td><form method="post" action="/discovery/select-segment" class="m-0"><input type="hidden" name="site_uuid" value="{{ site.site_uuid }}"><input type="hidden" name="segment_uuid" value="{{ item.segment_uuid }}"><input type="hidden" name="segment_name" value="{{ item.segment_name }}"><input type="hidden" name="segment_type" value="{{ item.segment_type }}"><button class="btn btn-sm btn-primary text-nowrap" type="submit">View Locations</button></form></td></tr>{% else %}<tr><td colspan="3" class="text-center text-secondary py-4">No segments found for this site and filter.</td></tr>{% endfor %}{% endif %}
+  </tbody></table></div>
+  {% set diagnostic_operation = "GetSegments" %}{% include "_discovery_diagnostics.html" %}
+</div></div>
+{% endblock %}

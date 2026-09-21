@@ -1,0 +1,72 @@
+{% if settings.admin_controls_enabled %}
+<details class="mt-4">
+  <summary class="text-secondary small">Diagnostics</summary>
+  <div class="card border-0 shadow-sm mt-2">
+    <div class="card-body small text-secondary">
+      <div class="fw-semibold text-body">Reference Data</div>
+      <div><strong>Loaded:</strong> {% if reference_data_status.isLoaded %}Yes{% else %}No{% endif %}</div>
+      <div><strong>Status:</strong> {{ reference_data_status.status }}</div>
+      {% if reference_data_status.filePath %}<div><strong>File path:</strong> <code>{{ reference_data_status.filePath }}</code></div>{% endif %}
+      {% if reference_data_status.importVersion %}<div><strong>Import version:</strong> {{ reference_data_status.importVersion }}</div>{% endif %}
+      {% if reference_data_status.importTimestamp %}<div><strong>Import timestamp:</strong> {{ reference_data_status.importTimestamp }}</div>{% endif %}
+      {% if reference_data_status.warning %}<div><strong>Warning:</strong> {{ reference_data_status.warning }}</div>{% endif %}
+      {% if reference_data_status.counts %}
+      <div><strong>Counts:</strong>
+        segmentTypes {{ reference_data_status.counts.segmentTypes }},
+        measurementLocationTypes {{ reference_data_status.counts.measurementLocationTypes }},
+        measurementTypes {{ reference_data_status.counts.measurementTypes }},
+        unitsOfMeasure {{ reference_data_status.counts.unitsOfMeasure }}
+      </div>
+      {% endif %}
+
+      <div class="fw-semibold text-body mt-3">Discovery Session</div>
+      <div><strong>Active:</strong> {% if discovery_session.active %}Yes{% else %}No{% endif %}</div>
+      {% if discovery_session.shortSessionId %}<div><strong>Request Session ID:</strong> <code>{{ discovery_session.shortSessionId }}</code></div>{% endif %}
+      {% if diagnostic_measurement_location_uuid %}<div><strong>Selected Measurement Location UUID:</strong> <code>{{ diagnostic_measurement_location_uuid }}</code></div>{% endif %}
+
+      {% if get_sites_diagnostics %}
+      <div class="fw-semibold text-body mt-3">GetSites</div>
+      <div><strong>Called:</strong> {% if get_sites_diagnostics.called %}Yes{% else %}No{% endif %}</div>
+      <div><strong>Envelope success:</strong> {{ get_sites_diagnostics.envelopeSuccess if get_sites_diagnostics.envelopeSuccess is not none else 'n/a' }}</div>
+      <div><strong>Raw response received:</strong> {% if get_sites_diagnostics.rawReceived %}Yes{% else %}No{% endif %}</div>
+      <div><strong>Parsed site count:</strong> {{ get_sites_diagnostics.parsedSiteCount }}</div>
+      {% if get_sites_diagnostics.postCommand %}
+      <div class="mt-2"><strong>Post argument list:</strong> <code>{{ get_sites_diagnostics.postCommand.argumentList|join(' ') }}</code></div>
+      <div><strong>Post input payload path:</strong> <code>{{ get_sites_diagnostics.postCommand.inputPayloadPath }}</code></div>
+      {% if get_sites_diagnostics.postCommand.resolvedCliPath %}<div><strong>Post CLI path:</strong> <code>{{ get_sites_diagnostics.postCommand.resolvedCliPath }}</code></div>{% endif %}
+      {% if get_sites_diagnostics.postCommand.workingDirectory %}<div><strong>Post working directory:</strong> <code>{{ get_sites_diagnostics.postCommand.workingDirectory }}</code></div>{% endif %}
+      {% if get_sites_diagnostics.postCommand.stdout %}<div><strong>Post stdout:</strong> <code>{{ get_sites_diagnostics.postCommand.stdout }}</code></div>{% endif %}
+      {% if get_sites_diagnostics.postCommand.stderr %}<div><strong>Post stderr:</strong> <code>{{ get_sites_diagnostics.postCommand.stderr }}</code></div>{% endif %}
+      {% endif %}
+      {% if get_sites_diagnostics.readCommand %}
+      <div class="mt-2"><strong>Read argument list:</strong> <code>{{ get_sites_diagnostics.readCommand.argumentList|join(' ') }}</code></div>
+      {% if get_sites_diagnostics.readCommand.resolvedCliPath %}<div><strong>Read CLI path:</strong> <code>{{ get_sites_diagnostics.readCommand.resolvedCliPath }}</code></div>{% endif %}
+      {% if get_sites_diagnostics.readCommand.workingDirectory %}<div><strong>Read working directory:</strong> <code>{{ get_sites_diagnostics.readCommand.workingDirectory }}</code></div>{% endif %}
+      {% if get_sites_diagnostics.readCommand.stdout %}<div><strong>Read stdout:</strong> <code>{{ get_sites_diagnostics.readCommand.stdout }}</code></div>{% endif %}
+      {% if get_sites_diagnostics.readCommand.stderr %}<div><strong>Read stderr:</strong> <code>{{ get_sites_diagnostics.readCommand.stderr }}</code></div>{% endif %}
+      {% endif %}
+      {% endif %}
+
+      {% if connector_error %}
+      <div class="fw-semibold text-body mt-3">Connector Error</div>
+      {% if diagnostic_operation %}<div><strong>Operation:</strong> {{ diagnostic_operation }}</div>{% endif %}
+      <div><strong>Error message:</strong> {{ connector_error.message }}</div>
+      {% if connector_error.exitCode is not none %}<div><strong>Exit code:</strong> {{ connector_error.exitCode }}</div>{% endif %}
+      {% if connector_error.timeoutSeconds %}<div><strong>Timeout:</strong> {{ connector_error.timeoutSeconds }} seconds</div>{% endif %}
+      {% if connector_error.command %}<div><strong>Command attempted:</strong> <code>{{ connector_error.command|join(' ') }}</code></div>{% endif %}
+      {% if connector_error.fault %}<div><strong>Fault:</strong> {{ connector_error.fault.code or 'UnknownFault' }}{% if connector_error.fault.message %} - {{ connector_error.fault.message }}{% endif %}</div>{% endif %}
+      {% if connector_error.diagnostics %}
+      <div><strong>Resolved CLI path:</strong> <code>{{ connector_error.diagnostics.resolvedCliPath }}</code></div>
+      <div><strong>Working directory:</strong> <code>{{ connector_error.diagnostics.workingDirectory }}</code></div>
+      {% if connector_error.diagnostics.argumentList %}<div><strong>Argument list:</strong> <code>{{ connector_error.diagnostics.argumentList|join(' ') }}</code></div>{% endif %}
+      {% if connector_error.diagnostics.inputPayloadPath %}<div><strong>Input payload path:</strong> <code>{{ connector_error.diagnostics.inputPayloadPath }}</code></div>{% endif %}
+      {% if connector_error.diagnostics.stdout %}<div><strong>stdout:</strong> <code>{{ connector_error.diagnostics.stdout }}</code></div>{% endif %}
+      {% if connector_error.diagnostics.stderr %}<div><strong>stderr:</strong> <code>{{ connector_error.diagnostics.stderr }}</code></div>{% endif %}
+      {% endif %}
+      {% if connector_error.stdout %}<div><strong>stdout:</strong> <code>{{ connector_error.stdout }}</code></div>{% endif %}
+      {% if connector_error.stderr %}<div><strong>stderr:</strong> <code>{{ connector_error.stderr }}</code></div>{% endif %}
+      {% endif %}
+    </div>
+  </div>
+</details>
+{% endif %}
