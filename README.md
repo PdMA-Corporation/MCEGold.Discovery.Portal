@@ -23,10 +23,10 @@ It also participates in the broader bottom-up/runtime data pattern by persisting
 - Python 3.12 is the recommended development baseline.
 - Access to `MCEGold.Data.Services.Connector.Cli` as an external prerequisite.
 - MCEGold Data Services connection details for live discovery.
-- Optional: Grafana with the `frser-sqlite-datasource` plugin.
+- Optional: Grafana with the `frser-sqlite-datasource` plugin, version `4.0.6` for deterministic v1.0.0 release validation.
 - Optional: Docker, if you want to build a Portal container image.
 
-The Connector CLI binary bundle is not included in this public-release candidate. Configure `MCEGOLD_CLI_PATH` or `configs/portal.local.json` to point to a local Connector CLI installation. A verified public distribution path for that CLI must be documented separately when available.
+The Connector CLI binary bundle is not included in this public-release candidate. Configure `MCEGOLD_CLI_PATH` or `configs/portal.local.json` to point to a local Connector CLI installation. The Toolkit publishes a self-contained Linux CLI package for users, and the official self-contained CLI runtime may be bundled into a future official MCEGold Discovery Docker image with the proprietary dependency notice described in [Third-Party Notices](THIRD-PARTY-NOTICES.md).
 
 ## Install and Run Locally
 
@@ -169,7 +169,7 @@ Portal startup seeds supported reference dimensions from:
 docs/CCOM Reference Data.xml
 ```
 
-The XML file is required to initialize an unseeded database unless `REFERENCE_DATA_PATH` is pointed at another valid copy. Repository content does not establish final public redistribution rights for this XML file. Treat redistribution approval as a public-release checklist item.
+The XML file is required to initialize an unseeded database unless `REFERENCE_DATA_PATH` is pointed at another valid copy. After a database has already been seeded successfully, startup can use the database marker and reference rows without reparsing the XML. The CCOM reference data is third-party MIMOSA material. It may be distributed with the Portal source and with a future MCEGold Discovery Docker image subject to applicable MIMOSA license conditions, and it is not licensed under the Portal MIT License.
 
 Seeded reference dimensions include:
 
@@ -218,13 +218,21 @@ The datasource provisioning expects the `frser-sqlite-datasource` plugin and a S
 /data/discovery_portal.db
 ```
 
+For v1.0.0 release validation, pin the SQLite datasource plugin to:
+
+```text
+frser-sqlite-datasource 4.0.6
+```
+
+The plugin must be installed before Grafana starts so datasource provisioning can resolve the plugin type. The pinned version was selected from the Grafana plugin catalog and upstream release metadata checked on 2026-09-30. Final image work should also pin and smoke-test the selected Grafana server version.
+
 For local non-container use, adjust the datasource path to the same database initialized by Portal.
 
 ## Docker Status
 
 The Dockerfile builds a Python Portal image and keeps the same container path conventions used by the broader demo environment. It no longer copies a committed Connector CLI binary bundle.
 
-A full runtime container still requires an externally provided Connector CLI at the configured `MCEGOLD_CLI_PATH`. Until a public Connector CLI distribution path is verified, full Docker runtime behavior is blocked by that external prerequisite.
+A full runtime container still requires an externally provided Connector CLI at the configured `MCEGOLD_CLI_PATH`. Future combined-image work may bundle the official self-contained Connector CLI runtime only with clear notice that the CLI/tooling layer and the proprietary `MCEGold.Data.Services.Connector` runtime/library have different licensing and source-availability boundaries.
 
 The combined Portal + PublicationCollector + Grafana compose stack is expected to live with the broader deployment/demo materials, not in this Portal repository unless added intentionally later.
 
@@ -242,11 +250,17 @@ Tests are designed to use local/temp resources and mocked CLI behavior where app
 
 This is a local/reference/demo application. It does not provide a complete authentication or production authorization layer.
 
-`SESSION_SECRET_KEY` signs session data; it is not user authentication. Do not expose the Settings/admin UI on an untrusted network without adding appropriate security controls.
+`SESSION_SECRET_KEY` signs session data; it is not user authentication. Override the development default for any shared or persistent environment.
 
 `adminControlsEnabled` can hide Settings and selected administrative controls, but it is not a replacement for authentication or network access control.
 
+Do not expose the Settings/admin UI on an untrusted network. For wider exposure, put Portal and Grafana behind an approved reverse proxy, identity provider, VPN, or equivalent network access control.
+
+Grafana default admin credentials must not be used in exposed environments. Set explicit Grafana admin credentials or an approved authentication mechanism before making Grafana reachable beyond a trusted local/LAN demo context.
+
 Keep credentials in ignored local config files or environment variables. Do not commit real credentials, connector configs, local SQLite databases, or captured live payloads.
+
+See [Single-Image Release Readiness](docs/single-image-release-readiness.md) for the current blocker dispositions for Connector CLI redistribution, CCOM reference data redistribution, Grafana plugin pinning, and demo access-control posture.
 
 ## Troubleshooting
 
@@ -258,4 +272,6 @@ Keep credentials in ignored local config files or environment variables. Do not 
 
 ## Licensing
 
-No authoritative public license file is present in this release candidate. A license and any required third-party/reference-data notices must be resolved before public release.
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
+
+Unless otherwise noted, MCEGold Discovery Portal source code is licensed under the MIT License. Third-party materials included with the project remain subject to their respective licenses and notices. See [Third-Party Notices](THIRD-PARTY-NOTICES.md), including the MIMOSA CCOM reference data and MCEGold Data Services Connector dependency notices.
