@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+from __future__ import annotations
+
+import os
+import sqlite3
+import sys
+import time
+from pathlib import Path
+
+
+DB_PATH = Path(os.getenv("MCEGOLD_DISCOVERY_DATABASE_PATH", "/data/discovery_portal.db"))
+TIMEOUT_SECONDS = float(os.getenv("MCEGOLD_DB_WAIT_TIMEOUT_SECONDS", "180"))
+POLL_SECONDS = float(os.getenv("MCEGOLD_DB_WAIT_POLL_SECONDS", "1"))
+REQUIRED_TABLES = {
+    "ApplicationSetting",
+    "CollectorRuntimeStatus",
+    "DimMeasurementLocation",
+    "FactMeasurement",
+    "SchemaVersion",
+}
+
+
+def database_ready(path: Path) -> tuple[bool, str]:
+    if not path.exists():
+        return False, f"database file is not present: {path}"
+    try:
+        with sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=1) as connection:
+            rows = connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table'"
+            ).fetchall()
+            table_names = {str(row[0]) for row in rows}
+            missing = sorted(REQUIRED_TABLES - table_names)
+            if missing:
+                return False, "missing tables: " + ", ".join(missing)
+            version_row = connection.execute(
+                "SELECT COALESCE(MAX(version), 0) FROM SchemaVersion"
+            ).fetchone()
+            version = int(version_row[0] or 0)
+            if version < 17:
+                return False, f"schema version {version} is not ready"
+            return True, "ready"
+    except sqlite3.Error as exc:
+        return False, str(exc)
+
+
+def main() -> int:
+    deadline = time.monotonic() + TIMEOUT_SECONDS
+    last_reason = ""
+    while time.monotonic() < deadline:
+        ready, reason = database_ready(DB_PATH)
+        if ready:
+            print(f"Portal database is ready at {DB_PATH}", flush=True)
+            return 0
+        if reason != last_reason:
+            print(f"Waiting for Portal database: {reason}", flush=True)
+            last_reason = reason
+        time.sleep(POLL_SECONDS)
+    print(f"Timed out waiting for Portal database at {DB_PATH}: {last_reason}", file=sys.stderr, flush=True)
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -11,6 +11,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from app.core.config import (
+    ConnectorConfigSyncError,
     MCEGOLD_DATA_SERVICES_FIELDS,
     MCEGOLD_SECRET_FIELDS,
     PORTAL_LOCAL_CONFIG_FIELDS,
@@ -18,6 +19,7 @@ from app.core.config import (
     resolve_portal_config_value,
     resolve_data_services_environment,
     settings,
+    synchronize_connector_config_from_portal,
     write_portal_local_config,
 )
 from app.models import Measurement, MeasurementLocation, Segment, Site
@@ -869,6 +871,11 @@ def home(request: Request, message: str | None = None) -> HTMLResponse:
     )
 
 
+@router.get("/health")
+def health() -> dict[str, str]:
+    return {"status": "ok"}
+
+
 @router.get("/settings", response_class=HTMLResponse)
 def settings_page(request: Request) -> HTMLResponse:
     require_admin_controls_enabled()
@@ -942,7 +949,23 @@ async def save_settings(request: Request) -> HTMLResponse:
             local_config.pop(local_key, None)
         elif value:
             local_config[local_key] = value
-    write_portal_local_config(local_config, settings.portal_local_config_path)
+    try:
+        write_portal_local_config(local_config, settings.portal_local_config_path)
+        synchronize_connector_config_from_portal(local_config, values["connector_config_path"])
+    except (ConnectorConfigSyncError, OSError):
+        return templates.TemplateResponse(
+            request,
+            "settings.html",
+            page_context(
+                request,
+                portal_settings=portal_settings_context(
+                    request,
+                    form_values=values | application_form_values,
+                    errors=["Connector configuration could not be saved."],
+                ),
+            ),
+            status_code=400,
+        )
     try:
         save_application_settings(request, application_values)
     except ApplicationSettingError as exc:

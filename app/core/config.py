@@ -59,6 +59,33 @@ MCEGOLD_DATA_SERVICES_FIELDS = {
 
 MCEGOLD_SECRET_FIELDS = {"mcegold_password", "mcegold_api_key"}
 
+CONNECTOR_CONFIG_DEFAULTS: dict[str, Any] = {
+    "host": "",
+    "authenticationScheme": "BasicApi",
+    "apiKey": "",
+    "userName": "",
+    "password": "",
+    "request": {
+        "channel": "",
+        "readResponse": True,
+        "removeResponseOnSuccess": False,
+    },
+    "publication": {
+        "channel": "",
+    },
+}
+
+CONNECTOR_CONFIG_PORTAL_FIELD_MAP = {
+    "mcegoldDataServicesUrl": "host",
+    "mcegoldUsername": "userName",
+    "mcegoldPassword": "password",
+    "mcegoldApiKey": "apiKey",
+}
+
+
+class ConnectorConfigSyncError(RuntimeError):
+    pass
+
 
 def read_portal_local_config(path: str | Path = PORTAL_LOCAL_CONFIG_PATH) -> dict[str, Any]:
     config_path = Path(path)
@@ -77,7 +104,66 @@ _LOCAL_CONFIG = read_portal_local_config(PORTAL_LOCAL_CONFIG_PATH)
 def write_portal_local_config(values: dict[str, Any], path: str | Path = PORTAL_LOCAL_CONFIG_PATH) -> None:
     config_path = Path(path)
     config_path.parent.mkdir(parents=True, exist_ok=True)
-    config_path.write_text(json.dumps(values, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    _write_json_replace(config_path, values)
+
+
+def synchronize_connector_config_from_portal(
+    portal_config: dict[str, Any],
+    connector_config_path: str | Path,
+) -> None:
+    config_path = Path(connector_config_path)
+    try:
+        connector_config = _read_connector_config_for_update(config_path)
+        for portal_key, connector_key in CONNECTOR_CONFIG_PORTAL_FIELD_MAP.items():
+            connector_config[connector_key] = str(portal_config.get(portal_key) or "")
+        connector_config["authenticationScheme"] = str(
+            connector_config.get("authenticationScheme") or CONNECTOR_CONFIG_DEFAULTS["authenticationScheme"]
+        )
+        _merge_connector_section(connector_config, "request")
+        _merge_connector_section(connector_config, "publication")
+        _write_json_replace(config_path, connector_config)
+    except ConnectorConfigSyncError:
+        raise
+    except OSError as exc:
+        raise ConnectorConfigSyncError("Connector configuration could not be saved.") from exc
+    except (TypeError, ValueError) as exc:
+        raise ConnectorConfigSyncError("Connector configuration could not be saved.") from exc
+
+
+def _read_connector_config_for_update(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return json.loads(json.dumps(CONNECTOR_CONFIG_DEFAULTS))
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ConnectorConfigSyncError("Connector configuration is not valid JSON.") from exc
+    except OSError as exc:
+        raise ConnectorConfigSyncError("Connector configuration could not be read.") from exc
+    if not isinstance(data, dict):
+        raise ConnectorConfigSyncError("Connector configuration root must be a JSON object.")
+    return data
+
+
+def _merge_connector_section(connector_config: dict[str, Any], section_name: str) -> None:
+    defaults = CONNECTOR_CONFIG_DEFAULTS[section_name]
+    existing = connector_config.get(section_name)
+    section = existing if isinstance(existing, dict) else {}
+    for key, value in defaults.items():
+        section.setdefault(key, value)
+    connector_config[section_name] = section
+
+
+def _write_json_replace(path: Path, values: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temp_path = path.with_name(f"{path.name}.tmp")
+    try:
+        temp_path.write_text(json.dumps(values, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        os.replace(temp_path, path)
+    except Exception:
+        try:
+            temp_path.unlink(missing_ok=True)
+        finally:
+            raise
 
 
 def resolve_portal_config_value(

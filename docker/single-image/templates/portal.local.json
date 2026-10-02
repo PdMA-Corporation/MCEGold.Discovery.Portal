@@ -1,0 +1,11 @@
+{
+  "mcegoldDataServicesUrl": "",
+  "mcegoldUsername": "",
+  "mcegoldPassword": "",
+  "mcegoldApiKey": "",
+  "adminControlsEnabled": true,
+  "grafanaDashboardUrl": "",
+  "mcegoldCliPath": "/opt/mcegold-cli/MCEGold.Data.Services.Connector.Cli",
+  "connectorConfigPath": "/config/connector.config.json",
+  "discoveryDatabasePath": "/data/discovery_portal.db"
+}

@@ -236,6 +236,14 @@ def select_location_context(test_client: TestClient) -> None:
     assert response.status_code == 303
 
 
+def test_health_endpoint_reports_alive() -> None:
+    with TestClient(app) as test_client:
+        response = test_client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
 def test_home_and_settings_pages_render() -> None:
     with TestClient(app) as test_client:
         home = test_client.get("/")
@@ -389,6 +397,7 @@ def test_measurement_invalid_recorded_range_does_not_call_cli() -> None:
 
 def test_settings_save_writes_current_local_config(monkeypatch, tmp_path) -> None:
     config_path = tmp_path / "portal.local.json"
+    connector_config_path = tmp_path / "connector.config.json"
     object.__setattr__(routes.settings, "portal_local_config_path", str(config_path))
 
     with TestClient(app) as test_client:
@@ -398,21 +407,60 @@ def test_settings_save_writes_current_local_config(monkeypatch, tmp_path) -> Non
                 "mcegold_data_services_url": "https://example.test/mcegold",
                 "mcegold_username": "demo-user",
                 "mcegold_cli_path": r"C:\tools\MCEGold.Data.Services.Connector.Cli.exe",
-                "connector_config_path": r"configs\connector.config.json",
+                "connector_config_path": str(connector_config_path),
                 "discovery_database_path": r"data\demo.db",
                 "grafana_dashboard_url": "http://127.0.0.1:3000/d/test",
             },
         )
 
     saved = json.loads(config_path.read_text(encoding="utf-8"))
+    connector_config = json.loads(connector_config_path.read_text(encoding="utf-8"))
     assert response.status_code == 200
     assert "Settings saved." in response.text
     assert saved["mcegoldDataServicesUrl"] == "https://example.test/mcegold"
     assert saved["mcegoldUsername"] == "demo-user"
     assert saved["mcegoldCliPath"] == r"C:\tools\MCEGold.Data.Services.Connector.Cli.exe"
-    assert saved["connectorConfigPath"] == r"configs\connector.config.json"
+    assert saved["connectorConfigPath"] == str(connector_config_path)
     assert saved["discoveryDatabasePath"] == r"data\demo.db"
     assert saved["grafanaDashboardUrl"] == "http://127.0.0.1:3000/d/test"
+    assert connector_config["host"] == "https://example.test/mcegold"
+
+
+def test_settings_save_reports_connector_sync_failure_without_logging_secrets(
+    monkeypatch,
+    tmp_path,
+    caplog,
+) -> None:
+    config_path = tmp_path / "portal.local.json"
+    object.__setattr__(routes.settings, "portal_local_config_path", str(config_path))
+
+    def fail_sync(_portal_config, _connector_config_path):
+        raise routes.ConnectorConfigSyncError("unsafe secret text should not render")
+
+    monkeypatch.setattr(routes, "synchronize_connector_config_from_portal", fail_sync)
+
+    with TestClient(app) as test_client:
+        response = test_client.post(
+            "/settings",
+            data={
+                "mcegold_data_services_url": "https://example.test/mcegold",
+                "mcegold_username": "demo-user",
+                "mcegold_password": "super-secret-password",
+                "mcegold_api_key": "super-secret-api-key",
+                "mcegold_cli_path": r"C:\tools\MCEGold.Data.Services.Connector.Cli.exe",
+                "connector_config_path": str(tmp_path / "connector.config.json"),
+                "discovery_database_path": r"data\demo.db",
+                "grafana_dashboard_url": "http://127.0.0.1:3000/d/test",
+            },
+        )
+
+    assert response.status_code == 400
+    assert "Connector configuration could not be saved." in response.text
+    assert "Settings saved." not in response.text
+    assert "super-secret-password" not in response.text
+    assert "super-secret-api-key" not in response.text
+    assert "super-secret-password" not in caplog.text
+    assert "super-secret-api-key" not in caplog.text
 
 
 def test_settings_save_rejects_missing_required_paths(tmp_path) -> None:

@@ -234,7 +234,79 @@ The Dockerfile builds a Python Portal image and keeps the same container path co
 
 A full runtime container still requires an externally provided Connector CLI at the configured `MCEGOLD_CLI_PATH`. Future combined-image work may bundle the official self-contained Connector CLI runtime only with clear notice that the CLI/tooling layer and the proprietary `MCEGold.Data.Services.Connector` runtime/library have different licensing and source-availability boundaries.
 
-The combined Portal + PublicationCollector + Grafana compose stack is expected to live with the broader deployment/demo materials, not in this Portal repository unless added intentionally later.
+### Phase 2A Single-Image Runtime
+
+`Dockerfile.single-image` builds the local appliance foundation for running Portal and PublicationCollector together under `supervisord`. Grafana is intentionally not included in this phase, and the image does not expose port 3000.
+
+The image contains:
+
+- Portal served by Uvicorn on port `8000`
+- PublicationCollector installed from the sibling `MCEGold.Discovery.PublicationCollector` Python package
+- the official self-contained Linux x64 Connector CLI runtime unpacked under `/opt/mcegold-cli`
+- `supervisord` as PID 1
+- safe default config templates
+- Portal license and third-party notice files
+
+Build from this repository with the Collector repository and validated Connector CLI package directory supplied as named build contexts:
+
+```powershell
+docker build `
+  -f Dockerfile.single-image `
+  --build-context collector-source=../MCEGold.Discovery.PublicationCollector `
+  --build-context connector-cli-package=../MCEGold.Data.Services.Connector.Toolkit/artifacts `
+  -t mcegold-discovery:phase2a `
+  .
+```
+
+The `connector-cli-package` context must contain:
+
+```text
+mcegold-python-linux-x64-v1.0.0.tar.gz
+```
+
+Run locally with persistent named volumes:
+
+```powershell
+docker volume create mcegold-discovery-data
+docker volume create mcegold-discovery-config
+
+docker run --rm `
+  --name mcegold-discovery-phase2a `
+  -p 8000:8000 `
+  -v mcegold-discovery-data:/data `
+  -v mcegold-discovery-config:/config `
+  mcegold-discovery:phase2a
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000
+http://127.0.0.1:8000/health
+```
+
+Runtime paths inside the container:
+
+- Portal application: `/app/portal`
+- Collector package runtime: installed in the Python environment
+- Runtime config directory: `/config`
+- Persistent data directory: `/data`
+- Shared SQLite database: `/data/discovery_portal.db`
+- Bundled Connector CLI path: `/opt/mcegold-cli/MCEGold.Data.Services.Connector.Cli`
+
+On first startup, the entrypoint copies safe templates to `/config/portal.local.json`, `/config/collector.local.json`, and `/config/connector.config.json` only when those files are absent. Existing mounted config files are preserved. Environment-variable overrides continue to take precedence according to the existing Portal and Collector configuration rules.
+
+Portal owns database creation, schema initialization, and reference-data seeding. The Collector process starts under supervisor after a readiness gate confirms the shared SQLite database exists with the Portal-owned schema. Use the Portal Settings page to enter the MCEGold endpoint and credentials; saving settings updates both `/config/portal.local.json` and `/config/connector.config.json` so Portal and Collector use the same bundled CLI and connection configuration. Without live MCEGold connection settings, the Collector remains in a degraded/idle retry posture and logs that connection settings are unavailable; basic container liveness does not require live MCEGold connectivity.
+
+Stop the container with:
+
+```powershell
+docker stop mcegold-discovery-phase2a
+```
+
+Restarting with the same `/data` volume reuses the existing SQLite database. Restarting with the same `/config` volume preserves settings saved through the UI.
+
+GHCR publishing, release tags, GitHub Releases, and Grafana integration are deferred to later phases.
 
 ## Tests
 

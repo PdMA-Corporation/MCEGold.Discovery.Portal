@@ -1,0 +1,15 @@
+{
+  "host": "",
+  "authenticationScheme": "BasicApi",
+  "apiKey": "",
+  "userName": "",
+  "password": "",
+  "request": {
+    "channel": "",
+    "readResponse": true,
+    "removeResponseOnSuccess": false
+  },
+  "publication": {
+    "channel": ""
+  }
+}

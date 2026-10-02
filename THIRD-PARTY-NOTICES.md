@@ -22,6 +22,6 @@ Preserve existing MIMOSA copyright, proprietary, and license notices when redist
 
 The MCEGold Data Services Connector CLI/tooling layer may be open source for users to inspect, modify, and adapt for integration workflows.
 
-The `MCEGold.Data.Services.Connector` runtime/library used by the CLI remains proprietary. Including its binary/runtime dependency in an official self-contained CLI package or a future official MCEGold Discovery Docker image does not make the proprietary Connector source code open source.
+The `MCEGold.Data.Services.Connector` runtime/library used by the CLI remains proprietary. Including its binary/runtime dependency in an official self-contained CLI package or an official MCEGold Discovery runtime image does not make the proprietary Connector source code open source.
 
 Applicable proprietary notices for the `MCEGold.Data.Services.Connector` runtime/library remain in force.

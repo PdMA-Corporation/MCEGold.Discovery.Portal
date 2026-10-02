@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+seed_file() {
+    template_path="$1"
+    target_path="$2"
+    if [ ! -f "$target_path" ]; then
+        cp "$template_path" "$target_path"
+    fi
+}
+
+mkdir -p /config /data /opt/mcegold-cli
+
+seed_file /app/templates/portal.local.json /config/portal.local.json
+seed_file /app/templates/collector.local.json /config/collector.local.json
+seed_file /app/templates/connector.config.json /config/connector.config.json
+
+exec "$@"

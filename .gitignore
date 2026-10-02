@@ -36,6 +36,7 @@ configs/portal.local.json
 .env
 .env.*
 *.local.json
+!docker/single-image/templates/*.local.json
 
 # Binary payloads are not part of the public Portal source
 *.pdb

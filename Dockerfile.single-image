@@ -1,0 +1,62 @@
+# syntax=docker/dockerfile:1.6
+
+FROM python:3.12-slim-bookworm AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PORTAL_LOCAL_CONFIG_PATH=/config/portal.local.json \
+    DISCOVERY_DATABASE_PATH=/data/discovery_portal.db \
+    CONNECTOR_CONFIG_PATH=/config/connector.config.json \
+    MCEGOLD_COLLECTOR_CONFIG=/config/collector.local.json \
+    MCEGOLD_CLI_PATH=/opt/mcegold-cli/MCEGold.Data.Services.Connector.Cli \
+    MCEGOLD_CONNECTOR_CONFIG_PATH=/config/connector.config.json \
+    MCEGOLD_DISCOVERY_DATABASE_PATH=/data/discovery_portal.db \
+    REFERENCE_DATA_PATH=/app/portal/docs/CCOM\ Reference\ Data.xml \
+    SESSION_SECRET_KEY=dev-only-change-this-session-secret
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates libicu72 supervisor \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd --system --gid 10001 mcegold \
+    && useradd --system --uid 10001 --gid mcegold --home-dir /home/mcegold --create-home mcegold
+
+WORKDIR /app/portal
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY --from=collector-source pyproject.toml README.md /tmp/collector/
+COPY --from=collector-source src /tmp/collector/src
+RUN pip install --no-cache-dir /tmp/collector \
+    && rm -rf /tmp/collector
+
+COPY --from=connector-cli-package mcegold-python-linux-x64-v1.0.0.tar.gz /tmp/connector-cli.tar.gz
+RUN mkdir -p /opt/mcegold-cli \
+    && tar -xzf /tmp/connector-cli.tar.gz -C /opt/mcegold-cli --strip-components=1 \
+    && rm /tmp/connector-cli.tar.gz \
+    && chmod 0755 /opt/mcegold-cli/MCEGold.Data.Services.Connector.Cli \
+    && test -x /opt/mcegold-cli/MCEGold.Data.Services.Connector.Cli
+
+COPY app ./app
+COPY configs ./configs
+COPY docs ./docs
+COPY LICENSE THIRD-PARTY-NOTICES.md ./
+COPY docker/single-image/templates /app/templates
+COPY docker/single-image/bin /usr/local/bin
+COPY docker/single-image/supervisord.conf /etc/supervisor/conf.d/mcegold-discovery.conf
+
+RUN chmod +x /usr/local/bin/mcegold-single-image-entrypoint /usr/local/bin/mcegold-wait-for-portal-db \
+    && mkdir -p /config /data /opt/mcegold-cli /var/log/supervisor /var/run/supervisor \
+    && chown -R mcegold:mcegold /app /config /data /opt/mcegold-cli /var/log/supervisor /var/run/supervisor /etc/supervisor/conf.d
+
+USER mcegold
+
+EXPOSE 8000
+VOLUME ["/config", "/data"]
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).read()" || exit 1
+
+ENTRYPOINT ["/usr/local/bin/mcegold-single-image-entrypoint"]
+CMD ["supervisord", "-c", "/etc/supervisor/conf.d/mcegold-discovery.conf"]

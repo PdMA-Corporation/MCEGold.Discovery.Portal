@@ -137,7 +137,7 @@ def settings_form(database_path, *, data_retention_enabled: bool, data_retention
     form = {
         "application_settings_present": "1",
         "mcegold_cli_path": "tests\\fake-cli.exe",
-        "connector_config_path": "configs\\connector.config.json",
+        "connector_config_path": str(database_path.parent / "connector.config.json"),
         "discovery_database_path": str(database_path),
         "grafana_dashboard_url": "http://127.0.0.1:3000/d/test",
         "collector_enabled": "on",
