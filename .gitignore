@@ -50,3 +50,6 @@ configs/portal.local.json
 # OS files
 Thumbs.db
 Desktop.ini
+
+# Local release artifacts
+artifacts/
