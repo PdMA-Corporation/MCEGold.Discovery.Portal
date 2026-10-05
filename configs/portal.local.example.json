@@ -3,7 +3,7 @@
   "mcegoldUsername": "",
   "mcegoldPassword": "",
   "mcegoldApiKey": "",
-  "adminControlsEnabled": true,
+  "adminControlsEnabled": false,
   "grafanaDashboardUrl": "http://localhost:3000/d/bfvnuobjmh3wgc/mcegold-operations?orgId=1",
   "mcegoldCliPath": "",
   "connectorConfigPath": "configs/connector.config.json",
