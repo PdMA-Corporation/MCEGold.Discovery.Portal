@@ -25,3 +25,11 @@ The MCEGold Data Services Connector CLI/tooling layer may be open source for use
 The `MCEGold.Data.Services.Connector` runtime/library used by the CLI remains proprietary. Including its binary/runtime dependency in an official self-contained CLI package or an official MCEGold Discovery runtime image does not make the proprietary Connector source code open source.
 
 Applicable proprietary notices for the `MCEGold.Data.Services.Connector` runtime/library remain in force.
+
+## Grafana
+
+The single-image appliance includes Grafana OSS for local dashboard viewing. Grafana OSS is distributed by Grafana Labs under its own license terms and is not relicensed by the MCEGold Discovery Portal MIT License.
+
+## Grafana SQLite Datasource Plugin
+
+The single-image appliance includes the `frser-sqlite-datasource` plugin version `4.0.6` so Grafana can query the shared SQLite database at `/data/discovery_portal.db`. The plugin remains subject to its own upstream license and notices.

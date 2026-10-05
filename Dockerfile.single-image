@@ -2,6 +2,10 @@
 
 FROM python:3.12-slim-bookworm AS runtime
 
+ARG GRAFANA_VERSION=12.1.1
+ARG GRAFANA_SHA256=825a1da86245046a1822fe5cb8901859d3f3f483b8e2b4cff166d0c03991d214
+ARG GRAFANA_SQLITE_PLUGIN_VERSION=4.0.6
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PORTAL_LOCAL_CONFIG_PATH=/config/portal.local.json \
@@ -12,10 +16,16 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     MCEGOLD_CONNECTOR_CONFIG_PATH=/config/connector.config.json \
     MCEGOLD_DISCOVERY_DATABASE_PATH=/data/discovery_portal.db \
     REFERENCE_DATA_PATH=/app/portal/docs/CCOM\ Reference\ Data.xml \
-    SESSION_SECRET_KEY=dev-only-change-this-session-secret
+    SESSION_SECRET_KEY=dev-only-change-this-session-secret \
+    GF_PATHS_CONFIG=/etc/grafana/grafana.ini \
+    GF_PATHS_DATA=/data/grafana \
+    GF_PATHS_LOGS=/var/log/grafana \
+    GF_PATHS_PLUGINS=/var/lib/grafana/plugins \
+    GF_PATHS_PROVISIONING=/etc/grafana/provisioning \
+    GF_SECURITY_ADMIN_USER=admin
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates libicu72 supervisor \
+    && apt-get install -y --no-install-recommends ca-certificates libfontconfig1 libicu72 musl supervisor \
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd --system --gid 10001 mcegold \
@@ -38,21 +48,39 @@ RUN mkdir -p /opt/mcegold-cli \
     && chmod 0755 /opt/mcegold-cli/MCEGold.Data.Services.Connector.Cli \
     && test -x /opt/mcegold-cli/MCEGold.Data.Services.Connector.Cli
 
+ADD https://dl.grafana.com/grafana/release/${GRAFANA_VERSION}/grafana_${GRAFANA_VERSION}_16903967602_linux_amd64.tar.gz /tmp/grafana.tar.gz
+RUN echo "${GRAFANA_SHA256}  /tmp/grafana.tar.gz" | sha256sum -c - \
+    && mkdir -p /usr/share/grafana \
+    && tar -xzf /tmp/grafana.tar.gz -C /usr/share/grafana --strip-components=1 \
+    && rm /tmp/grafana.tar.gz \
+    && test -x /usr/share/grafana/bin/grafana
+
+ADD https://github.com/fr-ser/grafana-sqlite-datasource/releases/download/v${GRAFANA_SQLITE_PLUGIN_VERSION}/frser-sqlite-datasource-${GRAFANA_SQLITE_PLUGIN_VERSION}.zip /tmp/frser-sqlite-datasource.zip
+RUN python -c "import pathlib, zipfile; target=pathlib.Path('/var/lib/grafana/plugins'); target.mkdir(parents=True, exist_ok=True); zipfile.ZipFile('/tmp/frser-sqlite-datasource.zip').extractall(target)" \
+    && rm /tmp/frser-sqlite-datasource.zip \
+    && chmod 0755 /var/lib/grafana/plugins/frser-sqlite-datasource/gpx_sqlite-datasource_linux_amd64 \
+    && test -x /var/lib/grafana/plugins/frser-sqlite-datasource/gpx_sqlite-datasource_linux_amd64
+
+RUN mkdir -p /etc/grafana/dashboards /etc/grafana/provisioning/dashboards /etc/grafana/provisioning/datasources /etc/grafana/provisioning/plugins /etc/grafana/provisioning/alerting
+
 COPY app ./app
 COPY configs ./configs
 COPY docs ./docs
+COPY grafana/provisioning /etc/grafana/provisioning
+COPY grafana/mcegold-operations.json /etc/grafana/dashboards/mcegold-operations.json
 COPY LICENSE THIRD-PARTY-NOTICES.md ./
 COPY docker/single-image/templates /app/templates
 COPY docker/single-image/bin /usr/local/bin
+COPY docker/single-image/grafana.ini /etc/grafana/grafana.ini
 COPY docker/single-image/supervisord.conf /etc/supervisor/conf.d/mcegold-discovery.conf
 
 RUN chmod +x /usr/local/bin/mcegold-single-image-entrypoint /usr/local/bin/mcegold-wait-for-portal-db \
-    && mkdir -p /config /data /opt/mcegold-cli /var/log/supervisor /var/run/supervisor \
-    && chown -R mcegold:mcegold /app /config /data /opt/mcegold-cli /var/log/supervisor /var/run/supervisor /etc/supervisor/conf.d
+    && mkdir -p /config /data /opt/mcegold-cli /var/log/grafana /var/log/supervisor /var/run/supervisor \
+    && chown -R mcegold:mcegold /app /config /data /opt/mcegold-cli /var/lib/grafana /var/log/grafana /var/log/supervisor /var/run/supervisor /etc/grafana /etc/supervisor/conf.d
 
 USER mcegold
 
-EXPOSE 8000
+EXPOSE 8000 3000
 VOLUME ["/config", "/data"]
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \

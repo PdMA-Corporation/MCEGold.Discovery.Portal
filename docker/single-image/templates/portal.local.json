@@ -4,7 +4,7 @@
   "mcegoldPassword": "",
   "mcegoldApiKey": "",
   "adminControlsEnabled": true,
-  "grafanaDashboardUrl": "",
+  "grafanaDashboardUrl": "http://localhost:3000/d/bfvnuobjmh3wgc/mcegold-operations?orgId=1",
   "mcegoldCliPath": "/opt/mcegold-cli/MCEGold.Data.Services.Connector.Cli",
   "connectorConfigPath": "/config/connector.config.json",
   "discoveryDatabasePath": "/data/discovery_portal.db"

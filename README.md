@@ -208,7 +208,7 @@ Discovery responses can upsert Sites, Segments, Measurement Locations, reference
 
 Grafana assets are optional reference/demo assets:
 
-- `grafana/MCEGold Operations.json`
+- `grafana/mcegold-operations.json`
 - `grafana/provisioning/datasources/sqlite.yaml`
 - `grafana/provisioning/dashboards/dashboards.yaml`
 
@@ -234,14 +234,16 @@ The Dockerfile builds a Python Portal image and keeps the same container path co
 
 A full runtime container still requires an externally provided Connector CLI at the configured `MCEGOLD_CLI_PATH`. Future combined-image work may bundle the official self-contained Connector CLI runtime only with clear notice that the CLI/tooling layer and the proprietary `MCEGold.Data.Services.Connector` runtime/library have different licensing and source-availability boundaries.
 
-### Phase 2A Single-Image Runtime
+### Single-Image Runtime
 
-`Dockerfile.single-image` builds the local appliance foundation for running Portal and PublicationCollector together under `supervisord`. Grafana is intentionally not included in this phase, and the image does not expose port 3000.
+`Dockerfile.single-image` builds the local appliance foundation for running Portal, PublicationCollector, and Grafana together under `supervisord`.
 
 The image contains:
 
 - Portal served by Uvicorn on port `8000`
 - PublicationCollector installed from the sibling `MCEGold.Discovery.PublicationCollector` Python package
+- Grafana OSS served on port `3000`
+- the pinned `frser-sqlite-datasource` plugin for SQLite dashboard access
 - the official self-contained Linux x64 Connector CLI runtime unpacked under `/opt/mcegold-cli`
 - `supervisord` as PID 1
 - safe default config templates
@@ -271,8 +273,9 @@ docker volume create mcegold-discovery-data
 docker volume create mcegold-discovery-config
 
 docker run --rm `
-  --name mcegold-discovery-phase2a `
+  --name mcegold-discovery `
   -p 8000:8000 `
+  -p 3000:3000 `
   -v mcegold-discovery-data:/data `
   -v mcegold-discovery-config:/config `
   mcegold-discovery:phase2a
@@ -283,6 +286,7 @@ Open:
 ```text
 http://127.0.0.1:8000
 http://127.0.0.1:8000/health
+http://127.0.0.1:3000
 ```
 
 Runtime paths inside the container:
@@ -292,21 +296,33 @@ Runtime paths inside the container:
 - Runtime config directory: `/config`
 - Persistent data directory: `/data`
 - Shared SQLite database: `/data/discovery_portal.db`
+- Grafana data directory: `/data/grafana`
+- Grafana config: `/etc/grafana/grafana.ini`
+- Grafana provisioning: `/etc/grafana/provisioning`
+- Grafana dashboards: `/etc/grafana/dashboards`
 - Bundled Connector CLI path: `/opt/mcegold-cli/MCEGold.Data.Services.Connector.Cli`
 
 On first startup, the entrypoint copies safe templates to `/config/portal.local.json`, `/config/collector.local.json`, and `/config/connector.config.json` only when those files are absent. Existing mounted config files are preserved. Environment-variable overrides continue to take precedence according to the existing Portal and Collector configuration rules.
+
+Grafana uses `GF_SECURITY_ADMIN_USER=admin`. If `GF_SECURITY_ADMIN_PASSWORD` is not provided, the entrypoint generates a password once and stores it in `/config/grafana.admin.password` with owner-only permissions. Preserve the `/config` volume to keep the generated Grafana admin password stable across restarts.
+
+For browser access from another machine, update **Settings -> Grafana dashboard URL** to the Docker host name or IP address, for example:
+
+```text
+http://<docker-host>:3000/d/bfvnuobjmh3wgc/mcegold-operations?orgId=1
+```
 
 Portal owns database creation, schema initialization, and reference-data seeding. The Collector process starts under supervisor after a readiness gate confirms the shared SQLite database exists with the Portal-owned schema. Use the Portal Settings page to enter the MCEGold endpoint and credentials; saving settings updates both `/config/portal.local.json` and `/config/connector.config.json` so Portal and Collector use the same bundled CLI and connection configuration. Without live MCEGold connection settings, the Collector remains in a degraded/idle retry posture and logs that connection settings are unavailable; basic container liveness does not require live MCEGold connectivity.
 
 Stop the container with:
 
 ```powershell
-docker stop mcegold-discovery-phase2a
+docker stop mcegold-discovery
 ```
 
-Restarting with the same `/data` volume reuses the existing SQLite database. Restarting with the same `/config` volume preserves settings saved through the UI.
+Restarting with the same `/data` volume reuses the existing SQLite database and Grafana state. Restarting with the same `/config` volume preserves settings saved through the UI and the generated Grafana admin password.
 
-GHCR publishing, release tags, GitHub Releases, and Grafana integration are deferred to later phases.
+GHCR publishing, release tags, and GitHub Releases are deferred to later phases.
 
 ## Tests
 

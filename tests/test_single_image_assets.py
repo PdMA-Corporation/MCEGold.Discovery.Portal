@@ -14,7 +14,7 @@ def test_single_image_dockerfile_uses_supervisor_and_collector_named_context() -
 
     assert "FROM python:3.12-slim-bookworm AS runtime" in dockerfile
     assert "supervisor" in dockerfile
-    assert "apt-get install -y --no-install-recommends ca-certificates libicu72 supervisor" in dockerfile
+    assert "apt-get install -y --no-install-recommends ca-certificates libfontconfig1 libicu72 musl supervisor" in dockerfile
     assert "COPY --from=collector-source pyproject.toml README.md /tmp/collector/" in dockerfile
     assert "pip install --no-cache-dir /tmp/collector" in dockerfile
     assert "COPY --from=connector-cli-package mcegold-python-linux-x64-v1.0.0.tar.gz" in dockerfile
@@ -22,12 +22,21 @@ def test_single_image_dockerfile_uses_supervisor_and_collector_named_context() -
     assert "rm /tmp/connector-cli.tar.gz" in dockerfile
     assert "chmod 0755 /opt/mcegold-cli/MCEGold.Data.Services.Connector.Cli" in dockerfile
     assert "test -x /opt/mcegold-cli/MCEGold.Data.Services.Connector.Cli" in dockerfile
-    assert "EXPOSE 8000" in dockerfile
+    assert "ARG GRAFANA_VERSION=12.1.1" in dockerfile
+    assert "ARG GRAFANA_SQLITE_PLUGIN_VERSION=4.0.6" in dockerfile
+    assert "grafana_${GRAFANA_VERSION}_16903967602_linux_amd64.tar.gz" in dockerfile
+    assert "sha256sum -c -" in dockerfile
+    assert "frser-sqlite-datasource-${GRAFANA_SQLITE_PLUGIN_VERSION}.zip" in dockerfile
+    assert "chmod 0755 /var/lib/grafana/plugins/frser-sqlite-datasource/gpx_sqlite-datasource_linux_amd64" in dockerfile
+    assert "test -x /var/lib/grafana/plugins/frser-sqlite-datasource/gpx_sqlite-datasource_linux_amd64" in dockerfile
+    assert "mkdir -p /etc/grafana/dashboards /etc/grafana/provisioning/dashboards /etc/grafana/provisioning/datasources /etc/grafana/provisioning/plugins /etc/grafana/provisioning/alerting" in dockerfile
+    assert "COPY grafana/provisioning /etc/grafana/provisioning" in dockerfile
+    assert "COPY grafana/mcegold-operations.json /etc/grafana/dashboards/mcegold-operations.json" in dockerfile
+    assert "COPY docker/single-image/grafana.ini /etc/grafana/grafana.ini" in dockerfile
+    assert "EXPOSE 8000 3000" in dockerfile
     assert "HEALTHCHECK" in dockerfile
     assert "/health" in dockerfile
     assert "USER mcegold" in dockerfile
-    assert "3000" not in dockerfile
-    assert "grafana" not in dockerfile.lower()
     assert "dotnet-install" not in dockerfile
     assert "dotnet-runtime" not in dockerfile
     assert "aspnetcore-runtime" not in dockerfile
@@ -52,6 +61,9 @@ def test_single_image_supervisor_manages_portal_and_collector() -> None:
     assert "[program:collector]" in config
     assert "mcegold-wait-for-portal-db" in config
     assert "mcegold-publication-collector /config/collector.local.json" in config
+    assert "[program:grafana]" in config
+    assert "/usr/share/grafana/bin/grafana server" in config
+    assert "--config=/etc/grafana/grafana.ini" in config
     assert "stopasgroup=true" in config
     assert "killasgroup=true" in config
     assert "stdout_logfile=/dev/stdout" in config
@@ -65,6 +77,22 @@ def test_single_image_entrypoint_seeds_config_without_overwriting_mounts() -> No
     assert "/config/portal.local.json" in entrypoint
     assert "/config/collector.local.json" in entrypoint
     assert "/config/connector.config.json" in entrypoint
+    assert "GF_SECURITY_ADMIN_PASSWORD" in entrypoint
+    assert "/config/grafana.admin.password" in entrypoint
+    assert "secrets.token_urlsafe(32)" in entrypoint
+    assert "chmod 600 /config/grafana.admin.password" in entrypoint
+
+
+def test_single_image_grafana_config_uses_appliance_paths() -> None:
+    config = read("docker/single-image/grafana.ini")
+
+    assert "data = /data/grafana" in config
+    assert "logs = /var/log/grafana" in config
+    assert "plugins = /var/lib/grafana/plugins" in config
+    assert "provisioning = /etc/grafana/provisioning" in config
+    assert "http_port = 3000" in config
+    assert "admin_password" not in config
+    assert "anonymous" not in config
 
 
 def test_single_image_wait_gate_checks_portal_owned_schema() -> None:
@@ -85,3 +113,12 @@ def test_single_image_connector_template_uses_blank_channels() -> None:
     assert template["request"]["readResponse"] is True
     assert template["request"]["removeResponseOnSuccess"] is False
     assert template["publication"]["channel"] == ""
+
+
+def test_single_image_portal_template_uses_browser_facing_grafana_default() -> None:
+    template = json.loads(read("docker/single-image/templates/portal.local.json"))
+
+    assert (
+        template["grafanaDashboardUrl"]
+        == "http://localhost:3000/d/bfvnuobjmh3wgc/mcegold-operations?orgId=1"
+    )

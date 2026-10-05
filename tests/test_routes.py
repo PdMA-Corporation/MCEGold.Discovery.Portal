@@ -256,6 +256,23 @@ def test_home_and_settings_pages_render() -> None:
     assert "MCEGold CLI executable path" in settings.text
 
 
+def test_dashboard_navigation_uses_configured_grafana_url() -> None:
+    object.__setattr__(
+        routes.settings,
+        "grafana_dashboard_url",
+        "http://dashboard.example.test:3000/d/bfvnuobjmh3wgc/mcegold-operations?orgId=1",
+    )
+
+    with TestClient(app) as test_client:
+        response = test_client.get("/")
+
+    assert response.status_code == 200
+    assert (
+        'href="http://dashboard.example.test:3000/d/bfvnuobjmh3wgc/mcegold-operations?orgId=1"'
+        in response.text
+    )
+
+
 def test_discovery_pages_redirect_without_session() -> None:
     with TestClient(app) as test_client:
         response = test_client.get("/discovery/sites", follow_redirects=False)
@@ -424,6 +441,16 @@ def test_settings_save_writes_current_local_config(monkeypatch, tmp_path) -> Non
     assert saved["discoveryDatabasePath"] == r"data\demo.db"
     assert saved["grafanaDashboardUrl"] == "http://127.0.0.1:3000/d/test"
     assert connector_config["host"] == "https://example.test/mcegold"
+
+
+def test_grafana_dashboard_url_loads_from_local_config() -> None:
+    value, source = routes.resolve_portal_config_value(
+        "grafana_dashboard_url",
+        {"grafanaDashboardUrl": "http://remote-host:3000/d/bfvnuobjmh3wgc/mcegold-operations?orgId=1"},
+    )
+
+    assert value == "http://remote-host:3000/d/bfvnuobjmh3wgc/mcegold-operations?orgId=1"
+    assert source == "local config"
 
 
 def test_settings_save_reports_connector_sync_failure_without_logging_secrets(

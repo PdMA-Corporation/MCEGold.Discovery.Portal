@@ -46,7 +46,7 @@ PORTAL_LOCAL_CONFIG_FIELDS = {
     "grafana_dashboard_url": {
         "env": "GRAFANA_DASHBOARD_URL",
         "local": "grafanaDashboardUrl",
-        "default": "http://127.0.0.1:3000/d/bfvnuobjmh3wgc/mcegold-operations?kiosk",
+        "default": "http://localhost:3000/d/bfvnuobjmh3wgc/mcegold-operations?orgId=1",
     },
 }
 
