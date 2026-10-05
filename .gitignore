@@ -53,3 +53,6 @@ Desktop.ini
 
 # Local release artifacts
 artifacts/
+
+# Local pytest temp directory
+.pytest-tmp/

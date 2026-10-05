@@ -15,14 +15,7 @@ seed_file /app/templates/portal.local.json /config/portal.local.json
 seed_file /app/templates/collector.local.json /config/collector.local.json
 seed_file /app/templates/connector.config.json /config/connector.config.json
 
-if [ -z "${GF_SECURITY_ADMIN_PASSWORD:-}" ]; then
-    if [ ! -f /config/grafana.admin.password ]; then
-        python -c "import pathlib, secrets; pathlib.Path('/config/grafana.admin.password').write_text(secrets.token_urlsafe(32) + '\n', encoding='utf-8')"
-        chmod 600 /config/grafana.admin.password
-    fi
-    export GF_SECURITY_ADMIN_PASSWORD="$(cat /config/grafana.admin.password)"
-fi
-
 export GF_SECURITY_ADMIN_USER="${GF_SECURITY_ADMIN_USER:-admin}"
+export GF_SECURITY_ADMIN_PASSWORD="${GF_SECURITY_ADMIN_PASSWORD:-admin}"
 
 exec "$@"
