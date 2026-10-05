@@ -74,7 +74,8 @@ COPY docker/single-image/bin /usr/local/bin
 COPY docker/single-image/grafana.ini /etc/grafana/grafana.ini
 COPY docker/single-image/supervisord.conf /etc/supervisor/conf.d/mcegold-discovery.conf
 
-RUN chmod +x /usr/local/bin/mcegold-single-image-entrypoint /usr/local/bin/mcegold-wait-for-portal-db \
+RUN sed -i 's/\r$//' /usr/local/bin/mcegold-single-image-entrypoint /usr/local/bin/mcegold-wait-for-portal-db \
+    && chmod +x /usr/local/bin/mcegold-single-image-entrypoint /usr/local/bin/mcegold-wait-for-portal-db \
     && mkdir -p /config /data /opt/mcegold-cli /var/log/grafana /var/log/supervisor /var/run/supervisor \
     && chown -R mcegold:mcegold /app /config /data /opt/mcegold-cli /var/lib/grafana /var/log/grafana /var/log/supervisor /var/run/supervisor /etc/grafana /etc/supervisor/conf.d
 
