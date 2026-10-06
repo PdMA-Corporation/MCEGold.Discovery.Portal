@@ -3,8 +3,8 @@
   "mcegoldUsername": "",
   "mcegoldPassword": "",
   "mcegoldApiKey": "",
-  "adminControlsEnabled": false,
-  "grafanaDashboardUrl": "http://localhost:3000/d/bfvnuobjmh3wgc/mcegold-operations?orgId=1",
+  "adminControlsEnabled": true,
+  "grafanaDashboardUrl": "http://localhost:3000/d/bfvnuobjmh3wgc/mcegold-operations?orgId=1&kiosk",
   "mcegoldCliPath": "",
   "connectorConfigPath": "configs/connector.config.json",
   "discoveryDatabasePath": "data/discovery_portal.db"

@@ -197,12 +197,25 @@ def test_single_image_connector_template_uses_blank_channels() -> None:
     assert template["publication"]["channel"] == ""
 
 
-def test_single_image_portal_template_uses_browser_facing_grafana_default() -> None:
+def test_single_image_portal_template_uses_release_defaults() -> None:
     template = json.loads(
         read("docker/single-image/templates/portal.local.json")
     )
 
+    assert template["adminControlsEnabled"] is True
     assert (
         template["grafanaDashboardUrl"]
-        == "http://localhost:3000/d/bfvnuobjmh3wgc/mcegold-operations?orgId=1"
+        == "http://localhost:3000/d/bfvnuobjmh3wgc/mcegold-operations?orgId=1&kiosk"
+    )
+
+
+def test_public_portal_example_uses_release_defaults() -> None:
+    template = json.loads(
+        read("configs/portal.local.example.json")
+    )
+
+    assert template["adminControlsEnabled"] is True
+    assert (
+        template["grafanaDashboardUrl"]
+        == "http://localhost:3000/d/bfvnuobjmh3wgc/mcegold-operations?orgId=1&kiosk"
     )
