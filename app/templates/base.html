@@ -19,7 +19,7 @@
         <div class="navbar-nav ms-lg-auto">
           <a class="nav-link {% if nav_path == '/' %}active{% endif %}" href="/">Home</a>
           <a class="nav-link {% if nav_path.startswith('/discovery') %}active{% endif %}" href="/discovery/sites">Discovery</a>
-          <a class="nav-link" href="{{ settings.grafana_dashboard_url }}" target="_blank" rel="noopener">Dashboard</a>
+          <a class="nav-link" href="{{ grafana_dashboard_url }}" target="_blank" rel="noopener">Dashboard</a>
           {% if settings.admin_controls_enabled %}
             <a class="nav-link {% if nav_path.startswith('/settings') %}active{% endif %}" href="/settings">Settings</a>
           {% endif %}

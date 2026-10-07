@@ -1,9 +1,11 @@
 import json
 import sqlite3
 from datetime import datetime, timezone
+from urllib.parse import urlsplit
 
 from fastapi.testclient import TestClient
 import pytest
+from starlette.requests import Request
 
 from app.api import routes
 from app.main import app
@@ -194,6 +196,21 @@ def start_discovery(test_client: TestClient, client: FakeCliClient | None = None
     return client
 
 
+def request_for_url(url: str) -> Request:
+    parsed = urlsplit(url)
+    return Request(
+        {
+            "type": "http",
+            "method": "GET",
+            "path": "/",
+            "headers": [(b"host", parsed.netloc.encode("ascii"))],
+            "scheme": parsed.scheme,
+            "server": (parsed.hostname or "testserver", parsed.port or 80),
+            "client": ("testclient", 50000),
+        }
+    )
+
+
 def select_site_context(test_client: TestClient) -> None:
     response = test_client.post(
         "/discovery/select-site",
@@ -256,21 +273,62 @@ def test_home_and_settings_pages_render() -> None:
     assert "MCEGold CLI executable path" in settings.text
 
 
-def test_dashboard_navigation_uses_configured_grafana_url() -> None:
-    object.__setattr__(
-        routes.settings,
-        "grafana_dashboard_url",
-        "http://dashboard.example.test:3000/d/bfvnuobjmh3wgc/mcegold-operations?orgId=1",
-    )
+@pytest.mark.parametrize(
+    ("configured_url", "portal_url", "expected_url"),
+    [
+        (
+            "http://localhost:3000/d/test?orgId=1&kiosk",
+            "http://localhost:8000",
+            "http://localhost:3000/d/test?orgId=1&kiosk",
+        ),
+        (
+            "http://localhost:3000/d/test?orgId=1&kiosk",
+            "http://130.110.3.228:8000",
+            "http://130.110.3.228:3000/d/test?orgId=1&kiosk",
+        ),
+        (
+            "http://localhost:3000/d/test?orgId=1&kiosk",
+            "http://mcegold-server:8000",
+            "http://mcegold-server:3000/d/test?orgId=1&kiosk",
+        ),
+        (
+            "http://127.0.0.1:3000/d/test?orgId=1&kiosk",
+            "http://130.110.3.228:8000",
+            "http://130.110.3.228:3000/d/test?orgId=1&kiosk",
+        ),
+        (
+            "https://grafana.example.com/d/test",
+            "http://130.110.3.228:8000",
+            "https://grafana.example.com/d/test",
+        ),
+        (
+            "http://[::1]:3000/d/test?orgId=1&kiosk#view",
+            "http://[2001:db8::1]:8000",
+            "http://[2001:db8::1]:3000/d/test?orgId=1&kiosk#view",
+        ),
+    ],
+)
+def test_dashboard_navigation_resolves_loopback_grafana_host(
+    configured_url: str,
+    portal_url: str,
+    expected_url: str,
+) -> None:
+    original_url = routes.settings.grafana_dashboard_url
 
-    with TestClient(app) as test_client:
-        response = test_client.get("/")
+    try:
+        object.__setattr__(
+            routes.settings,
+            "grafana_dashboard_url",
+            configured_url,
+        )
 
-    assert response.status_code == 200
-    assert (
-        'href="http://dashboard.example.test:3000/d/bfvnuobjmh3wgc/mcegold-operations?orgId=1"'
-        in response.text
-    )
+        assert routes.resolve_grafana_dashboard_url(request_for_url(portal_url)) == expected_url
+    finally:
+        object.__setattr__(
+            routes.settings,
+            "grafana_dashboard_url",
+            original_url,
+        )
 
 
 def test_discovery_pages_redirect_without_session() -> None:

@@ -4,7 +4,7 @@ import threading
 from decimal import Decimal, InvalidOperation
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlparse, urlsplit, urlunsplit
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
@@ -69,16 +69,51 @@ COLLECTOR_STATUS_MESSAGES = {
     "Error": "Collector process is alive and reported an operational error.",
 }
 
+LOOPBACK_GRAFANA_HOSTS = {"localhost", "127.0.0.1", "::1"}
+
 
 def page_context(request: Request, **values: object) -> dict[str, object]:
     return {
         "request": request,
         "settings": settings,
+        "grafana_dashboard_url": resolve_grafana_dashboard_url(request),
         "reference_data_status": get_reference_data_status(get_database_path(request)),
         "connector_status": get_connector_status(request),
         "discovery_session": get_discovery_session_status(request),
         **values,
     }
+
+
+def resolve_grafana_dashboard_url(request: Request) -> str:
+    configured_url = settings.grafana_dashboard_url
+    parsed = urlsplit(configured_url)
+    if parsed.hostname not in LOOPBACK_GRAFANA_HOSTS:
+        return configured_url
+
+    portal_hostname = request.url.hostname
+    if not portal_hostname:
+        return configured_url
+
+    try:
+        port = parsed.port
+    except ValueError:
+        return configured_url
+
+    return urlunsplit(
+        parsed._replace(
+            netloc=_replace_url_hostname(parsed.netloc, portal_hostname, port),
+        )
+    )
+
+
+def _replace_url_hostname(netloc: str, hostname: str, port: int | None) -> str:
+    userinfo = ""
+    if "@" in netloc:
+        userinfo = f"{netloc.rsplit('@', 1)[0]}@"
+    formatted_hostname = f"[{hostname}]" if ":" in hostname and not hostname.startswith("[") else hostname
+    if port is None:
+        return f"{userinfo}{formatted_hostname}"
+    return f"{userinfo}{formatted_hostname}:{port}"
 
 
 def create_discovery_client() -> DiscoveryClient:
