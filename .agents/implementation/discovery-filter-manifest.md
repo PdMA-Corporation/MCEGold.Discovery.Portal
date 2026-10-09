@@ -277,4 +277,4 @@ Use the selected parent UUID as the connector filter at every step, add conserva
 - Python `06_post_request.py`, `cli_helpers.py`, and Python sample README
 - CLI `RequestPayloadTests`, `PythonSampleContractTests`, `CliApplicationTests`, `CliSmokeTests`, and staged command tests
 
-The machine-readable counterpart is [`discovery-filter-manifest.json`](discovery-filter-manifest.json).
+The machine-readable counterpart is [`discovery-filter-manifest.json`](../../docs/discovery-filter-manifest.json).

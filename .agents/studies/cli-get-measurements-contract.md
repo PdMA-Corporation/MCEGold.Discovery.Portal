@@ -30,7 +30,7 @@ The Toolkit references below are external repository dependencies from `MCEGold.
 - `MCEGoldDataService/MCEGoldDataService/BODDefinitions/ShowMeasurementsDefinition.cs`
 - `MCEGoldDataService/MCEGoldDataService/BODDefinitions/CCOMElements.cs`
 - `MCEGoldDataService/MCEGoldDataService/Processes/CreateResponseBODs.cs`
-- Existing portal discovery manifest notes in `MCEGold.Discovery.Portal/docs/discovery-filter-manifest.md`
+- Existing portal discovery manifest notes in `MCEGold.Discovery.Portal/.agents/implementation/discovery-filter-manifest.md`
 
 ## CLI command
 

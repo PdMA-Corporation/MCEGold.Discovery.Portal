@@ -348,8 +348,6 @@ Grafana default admin credentials must not be used in exposed environments. Set 
 
 Keep credentials in ignored local config files or environment variables. Do not commit real credentials, connector configs, local SQLite databases, or captured live payloads.
 
-See [Single-Image Release Readiness](docs/single-image-release-readiness.md) for the current blocker dispositions for Connector CLI redistribution, CCOM reference data redistribution, Grafana plugin pinning, and demo access-control posture.
-
 ## Troubleshooting
 
 - If Portal cannot start discovery, confirm `MCEGOLD_CLI_PATH` points to a real local Connector CLI executable or DLL.
