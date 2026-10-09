@@ -2,111 +2,82 @@
 
 [Back to README](../README.md)
 
-This guide follows the standard single-image deployment path. The image includes MCEGold Discovery Portal, Publication Collector, Connector CLI, SQLite, and Grafana.
+Use this guide for the standard published single-image deployment. The image includes MCEGold Discovery Portal, Publication Collector, Connector CLI, SQLite, and Grafana.
+
+For complete platform-specific commands, see the [Deployment Guide](deployment.md).
 
 ## Prerequisites
 
-- Docker on Linux or Docker Desktop on Windows.
-- Access to the published MCEGold Discovery release image.
+- Docker Engine on Linux, or Docker Desktop on Windows running Linux containers.
+- The downloaded MCEGold Discovery image archive from the release.
 - MCEGold Data Services connection details.
-- Available local ports `8000` and `3000`.
+- Available host ports `8000` and `3000`.
 
-## 1. Obtain the Release Image
+## 1. Load the Image
 
-Download the image archive or use the image reference published with the release. If the release provides an image archive, load it first:
-
-```powershell
-docker load -i .\mcegold-discovery-image.tar
-```
-
-Use the image name and tag from the release notes in the commands below. The examples use a placeholder:
+Load the image archive supplied with the release:
 
 ```text
-mcegold-discovery:<version>
+docker load -i <downloaded-image-archive>.tar
 ```
+
+Use the image name and tag printed by `docker load`. For example, if Docker prints:
+
+```text
+Loaded image: mcegold-discovery:1.0.0
+```
+
+then use:
+
+```text
+mcegold-discovery:1.0.0
+```
+
+in the run command.
 
 ## 2. Create Persistent Volumes
 
-```powershell
-docker volume create mcegold-discovery-config
-docker volume create mcegold-discovery-data
+The beginner deployment uses Docker named volumes:
+
+```text
+mcegold-config
+mcegold-data
 ```
 
-The `/config` volume stores local configuration. The `/data` volume stores the SQLite discovery database and Grafana data.
+`mcegold-config` stores local configuration. `mcegold-data` stores the SQLite discovery database and Grafana data.
 
 ## 3. Run the Container
 
-```powershell
-docker run --rm `
-  --name mcegold-discovery `
-  -p 8000:8000 `
-  -p 3000:3000 `
-  -v mcegold-discovery-config:/config `
-  -v mcegold-discovery-data:/data `
-  mcegold-discovery:<version>
-```
+Run the image with:
 
-For Linux shells:
+- Portal exposed on `8000`
+- Grafana exposed on `3000`
+- `/config` persisted to `mcegold-config`
+- `/data` persisted to `mcegold-data`
 
-```bash
-docker run --rm \
-  --name mcegold-discovery \
-  -p 8000:8000 \
-  -p 3000:3000 \
-  -v mcegold-discovery-config:/config \
-  -v mcegold-discovery-data:/data \
-  mcegold-discovery:<version>
-```
+Detailed copy-and-paste commands are available for [Linux Docker Engine](deployment.md#linux-docker-engine) and [Windows Docker Desktop](deployment.md#windows-docker-desktop).
 
-## 4. Open the Portal
+## 4. First-Time Setup
 
-Open:
+1. Open the Portal: `http://localhost:8000`
+2. Open **Settings**.
+3. Configure the MCEGold Data Services connection.
+4. Save settings.
+5. Start discovery.
+6. Select Site -> Segment -> Measurement Location -> Measurements.
+7. Confirm discovery results are shown.
+8. Open Grafana: `http://localhost:3000`
 
-```text
-http://localhost:8000
-```
+You do not need to manually install the Connector CLI when using the published single-image deployment.
 
-The health endpoint is:
+## Expected Result
 
-```text
-http://localhost:8000/health
-```
+After setup:
 
-## 5. Configure MCEGold Data Services
+- the Portal opens on port `8000`;
+- connector status can be verified from the Portal;
+- discovery results can be selected in the guided workflow;
+- the Publication Collector runs inside the container;
+- Grafana opens on port `3000` and reads from the local SQLite database.
 
-Open **Settings** in the Portal and enter the values supplied for your MCEGold Data Services environment:
-
-- Data Services URL
-- username
-- password
-- API key, if used by your environment
-
-Saving settings persists local configuration under `/config`.
-
-## 6. Run Top-Down Discovery
-
-Start discovery from the Portal and follow the guided path:
-
-```text
-Site -> Segment -> Measurement Location -> Measurements
-```
-
-A successful first run shows connector status as connected, lets you select discovered entities, and stores discovered data in the SQLite database under `/data`.
-
-## 7. Enable or Check the Publication Collector
-
-The Publication Collector runs inside the container. In Portal Settings, confirm whether collector processing is enabled and set the polling interval if needed.
-
-When the Collector is running and configured, it processes incoming publications and updates runtime status and measurement data in SQLite.
-
-## 8. Open Grafana
-
-Open:
-
-```text
-http://localhost:3000
-```
-
-Grafana may take longer than the Portal to become ready on first startup. The default image configures Grafana to read from the SQLite database at `/data/discovery_portal.db`.
-
-If you expose Grafana beyond a trusted local environment, set explicit Grafana credentials and follow the [Deployment Security Notes](security.md).
+For errors, see [Troubleshooting](troubleshooting.md).
