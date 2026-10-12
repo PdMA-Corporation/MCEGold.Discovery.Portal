@@ -46,6 +46,16 @@ The Connector CLI is the integration boundary to MCEGold Data Services. The Port
 - **SQLite discovery database**: local persistence for application settings, discovered entities, runtime status, and measurements.
 - **Grafana**: dashboard service on port `3000` for viewing discovered and collected data.
 
+## Live Demo
+
+Explore the live MCEGold Discovery Portal:
+
+[Open the Live Demo](https://portal-sunrise.pdmaservices.com/)
+
+[![MCEGold Discovery dashboard showing discovered measurement data](docs/images/MCEGold_Dashboard.png)](https://portal-sunrise.pdmaservices.com/)
+
+*Example Grafana dashboard populated from data discovered through the MCEGold Discovery Portal.*
+
 ## Quick Start
 
 The shortest path is to use the published release image:
