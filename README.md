@@ -1,14 +1,18 @@
 # MCEGold Discovery Portal
 
-MCEGold Discovery Portal is a deployable reference application for exploring MCEGold Data Services discovery workflows and viewing discovered measurement data with Grafana.
+MCEGold Discovery Portal is a deployable reference appliance for exploring MCEGold Data Services discovery workflows, collecting published measurement data, and viewing locally persisted results in Grafana.
 
 ![MCEGold Discovery Portal guided discovery screen](docs/images/MCEGold_Portal.png)
 
+## Purpose
+
+This project provides a practical way to explore and validate MCEGold Data Services without first building a custom integration. It helps users discover the MCEGold hierarchy and measurements, understand how MCEGold Data Services can be integrated, collect published measurement data, persist discovered data locally, and inspect results through a bundled dashboard.
+
 ## Overview
 
-The Portal helps integrators and deployment administrators configure a local MCEGold discovery environment, run guided discovery, persist discovered data in SQLite, and inspect that data through a bundled Grafana dashboard.
+The default deployment is a single Docker image intended for demos, evaluation, and integration planning. It includes the Portal UI, Publication Collector, Connector CLI, SQLite discovery database, and Grafana. A user running the published image does not need to install the Connector CLI separately.
 
-The default deployment is a single Docker image intended for demos, evaluation, and integration planning. It includes the Portal UI, the Publication Collector, the Connector CLI, SQLite, and Grafana so users do not need to install the Connector CLI separately for the standard image-based path.
+The Portal focuses on guided top-down discovery from Site to Segment to Measurement Location to Measurements. The Publication Collector runs in the same appliance and stores incoming publication data in the local SQLite discovery database. Grafana reads that local database for dashboard views.
 
 ## Architecture at a Glance
 
@@ -16,41 +20,44 @@ The default deployment is a single Docker image intended for demos, evaluation, 
 MCEGold Data Services
         |
         v
-MCEGold Data Services Connector CLI
+Connector CLI
         |
-        v
-Portal / Publication Collector
-        |
-        v
-SQLite discovery database
-        |
-        v
-Grafana
+        +----------------------+
+        |                      |
+        v                      v
+Discovery Portal      Publication Collector
+        |                      |
+        +----------+-----------+
+                   |
+                   v
+          SQLite discovery database
+                   |
+                   v
+                Grafana
 ```
 
-The Portal and Publication Collector both use the Connector CLI to communicate with MCEGold Data Services. The Portal provides the user-facing configuration and top-down discovery workflow. The Publication Collector runs continuously and stores incoming publication data. SQLite is the shared local persistence layer, and Grafana reads from that SQLite data.
+The Connector CLI is the integration boundary to MCEGold Data Services. The Portal and Publication Collector both use it, then persist local data in SQLite. Grafana reads from that SQLite data.
 
 ## Included Components
 
-- **Discovery Portal**: web UI for configuration, connector status, and guided discovery.
-- **Publication Collector**: background process that processes MCEGold publications and writes runtime data.
+- **MCEGold Discovery Portal**: web UI for configuration, connector status, and guided top-down discovery.
+- **Publication Collector**: background process that collects MCEGold publication data and stores local runtime data.
 - **Connector CLI**: bundled command-line bridge to MCEGold Data Services in the default single-image deployment.
-- **SQLite**: local discovery database stored under `/data`.
+- **SQLite discovery database**: local persistence for application settings, discovered entities, runtime status, and measurements.
 - **Grafana**: dashboard service on port `3000` for viewing discovered and collected data.
 
 ## Quick Start
 
-The shortest path is to use the published release image.
+The shortest path is to use the published release image:
 
-1. Obtain the release image from the project's release artifacts.
-2. Run the image with ports `8000` and `3000` exposed.
-3. Persist `/config` and `/data` with Docker volumes.
-4. Open the Portal at `http://localhost:8000`.
-5. Configure MCEGold Data Services connection settings in the Portal.
-6. Start discovery and follow Site -> Segment -> Measurement Location -> Measurements.
-7. Open Grafana at `http://localhost:3000`.
+1. Download the release archive from the GitHub Releases page.
+2. Load the image with Docker and use the explicit version tag printed by `docker load`.
+3. Run the container with ports `8000` and `3000` exposed.
+4. Persist `/config` and `/data` with the `mcegold-config` and `mcegold-data` Docker volumes.
+5. Open the Portal at `http://localhost:8000`, configure MCEGold Data Services, and start discovery.
+6. Open Grafana at `http://localhost:3000`.
 
-See [Quick Start](docs/quick-start.md) for complete first-run instructions.
+See [Quick Start](docs/quick-start.md) for the first-run workflow.
 
 ## Documentation
 

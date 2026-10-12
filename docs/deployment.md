@@ -2,33 +2,29 @@
 
 [Back to README](../README.md)
 
-This guide deploys the published MCEGold Discovery Portal single-image Docker release. The image contains:
+This guide deploys the published MCEGold Discovery Portal single-image Docker appliance. The image contains the Portal, Publication Collector, Connector CLI, SQLite discovery database, and Grafana.
 
-- MCEGold Discovery Portal
-- Publication Collector
-- Connector CLI
-- SQLite
-- Grafana
+Download the release archive from the GitHub Releases page. The permanent release URL and filename policy are not finalized, so the commands below use version placeholders.
 
-The default ports are:
+Default service ports:
 
 | Service | Host URL |
 | --- | --- |
-| Portal | `http://localhost:8000` |
+| MCEGold Discovery Portal | `http://localhost:8000` |
 | Grafana | `http://localhost:3000` |
 
-The default persistent container paths are:
+Persistent volumes:
 
-| Container path | Named volume | Contains |
+| Named volume | Container path | Contains |
 | --- | --- | --- |
-| `/config` | `mcegold-config` | local configuration for the Portal, Connector, Collector, and Grafana-related settings |
-| `/data` | `mcegold-data` | SQLite discovery database and Grafana data |
+| `mcegold-config` | `/config` | Appliance configuration for the Portal, Connector CLI, and Publication Collector |
+| `mcegold-data` | `/data` | SQLite discovery database and persistent runtime data, including Grafana data |
 
-Deleting or replacing the container does not delete these named volumes. The data remains until the volumes are removed.
+Deleting or replacing the container does not delete these named volumes. Normal upgrades should reuse them.
 
 ## Linux Docker Engine
 
-Run these commands in Bash from the directory containing the downloaded image archive.
+Run these commands in Bash from a Linux host with Docker Engine installed.
 
 ### 1. Verify Docker
 
@@ -37,46 +33,45 @@ docker --version
 docker info
 ```
 
-Expected result: Docker reports a version and server information.
+Docker should report both client and server information.
 
-### 2. Load the Downloaded Image Archive
+### 2. Change to the Archive Directory
+
+```bash
+cd /path/to/downloaded/release
+```
+
+### 3. Load the Image
 
 Replace the archive name with the file supplied by the release.
 
 ```bash
-docker load -i ./mcegold-discovery-image.tar
+docker load -i ./mcegold-discovery-<version>-linux-amd64.tar.gz
 ```
 
-Expected result: Docker prints the loaded image name and tag, for example:
+Expected output includes a loaded image tag, for example:
 
 ```text
 Loaded image: mcegold-discovery:1.0.0
 ```
 
-### 3. Verify the Image
-
-Use the exact image name and tag printed by `docker load`.
+### 4. Verify the Image and Set a Variable
 
 ```bash
-docker image ls
+docker image ls mcegold-discovery
+IMAGE="mcegold-discovery:<version>"
 ```
 
-Find the repository and tag printed by `docker load`, then use that exact value in the `IMAGE` variable:
+Use the exact image tag printed by `docker load`; for example, `mcegold-discovery:1.0.0`.
 
-```bash
-IMAGE="mcegold-discovery:1.0.0"
-```
-
-### 4. Create Named Volumes
+### 5. Create Named Volumes
 
 ```bash
 docker volume create mcegold-config
 docker volume create mcegold-data
 ```
 
-Expected result: Docker prints each volume name.
-
-### 5. Run the Container
+### 6. Run the Container
 
 ```bash
 docker run -d \
@@ -89,23 +84,33 @@ docker run -d \
   "$IMAGE"
 ```
 
-Expected result: Docker prints a container ID.
+This publishes the Portal on port `8000`, publishes Grafana on port `3000`, and mounts the persistent volumes at `/config` and `/data`.
 
-### 6. Verify Container Status
+### 7. Check Container Status
 
 ```bash
 docker ps
-```
-
-Expected result: `mcegold-discovery` is running and ports `8000` and `3000` are listed.
-
-For all containers, including stopped containers:
-
-```bash
 docker ps -a
 ```
 
-### 7. Open the Portal
+The `mcegold-discovery` container should be running.
+
+### 8. Check Health
+
+```bash
+docker inspect --format '{{.State.Health.Status}}' mcegold-discovery
+```
+
+The health status should become `healthy` after the Portal starts. First startup may take longer while the SQLite discovery database is initialized.
+
+### 9. View Logs
+
+```bash
+docker logs mcegold-discovery
+docker logs -f mcegold-discovery
+```
+
+### 10. Open the Portal
 
 Open:
 
@@ -113,7 +118,9 @@ Open:
 http://localhost:8000
 ```
 
-### 8. Open Grafana
+If connecting from another machine, use the Linux Docker host address instead of `localhost`.
+
+### 11. Open Grafana
 
 Open:
 
@@ -121,13 +128,52 @@ Open:
 http://localhost:3000
 ```
 
-Grafana may take longer than the Portal to become ready on first startup.
+Grafana may take longer than the Portal to become ready.
+
+### 12. Stop, Start, or Restart
+
+```bash
+docker stop mcegold-discovery
+docker start mcegold-discovery
+docker restart mcegold-discovery
+```
+
+### 13. Upgrade While Preserving Data
+
+Do not remove `mcegold-config` or `mcegold-data` during a normal upgrade.
+
+```bash
+docker stop mcegold-discovery
+docker rm mcegold-discovery
+docker load -i ./mcegold-discovery-<new-version>-linux-amd64.tar.gz
+docker image ls mcegold-discovery
+IMAGE="mcegold-discovery:<new-version>"
+docker run -d \
+  --name mcegold-discovery \
+  --restart unless-stopped \
+  -p 8000:8000 \
+  -p 3000:3000 \
+  -v mcegold-config:/config \
+  -v mcegold-data:/data \
+  "$IMAGE"
+```
+
+### 14. Clean Reset
+
+Warning: this deletes local configuration, the local SQLite discovery database, and persistent Grafana/runtime state stored in the named volumes.
+
+```bash
+docker stop mcegold-discovery
+docker rm mcegold-discovery
+docker volume rm mcegold-config
+docker volume rm mcegold-data
+```
+
+After a clean reset, recreate the volumes and run the container again.
 
 ## Windows Docker Desktop
 
-Docker Desktop must be running and set to Linux containers.
-
-Run these commands in PowerShell.
+Docker Desktop must be running Linux containers. These steps use PowerShell only. WSL is not required as an end-user deployment step by this repository.
 
 ### 1. Verify Docker Desktop / Docker Engine
 
@@ -136,9 +182,9 @@ docker --version
 docker info
 ```
 
-Expected result: Docker reports a version and server information. If `docker info` cannot connect, start Docker Desktop and confirm it is using Linux containers.
+If `docker info` cannot connect, start Docker Desktop and confirm it is using Linux containers.
 
-### 2. Change to the Folder Containing the Downloaded Archive
+### 2. Change to the Downloaded Archive Folder
 
 ```powershell
 Set-Location C:\Path\To\Downloaded\Release
@@ -149,26 +195,23 @@ Set-Location C:\Path\To\Downloaded\Release
 Replace the archive name with the file supplied by the release.
 
 ```powershell
-docker load -i .\mcegold-discovery-image.tar
+docker load -i .\mcegold-discovery-<version>-linux-amd64.tar.gz
 ```
 
-Expected result: Docker prints the loaded image name and tag, for example:
+Expected output includes a loaded image tag, for example:
 
 ```text
 Loaded image: mcegold-discovery:1.0.0
 ```
 
-### 4. Verify the Image
+### 4. Verify the Image and Set a Variable
 
 ```powershell
-docker image ls
+docker image ls mcegold-discovery
+$Image = "mcegold-discovery:<version>"
 ```
 
-Find the repository and tag printed by `docker load`, then use that exact value in `$Image`:
-
-```powershell
-$Image = "mcegold-discovery:1.0.0"
-```
+Use the exact image tag printed by `docker load`; for example, `mcegold-discovery:1.0.0`.
 
 ### 5. Create Named Volumes
 
@@ -176,8 +219,6 @@ $Image = "mcegold-discovery:1.0.0"
 docker volume create mcegold-config
 docker volume create mcegold-data
 ```
-
-Expected result: Docker prints each volume name.
 
 ### 6. Run the Container
 
@@ -192,102 +233,66 @@ docker run -d `
   $Image
 ```
 
-Expected result: Docker prints a container ID.
+This publishes the Portal on port `8000`, publishes Grafana on port `3000`, and mounts the persistent volumes at `/config` and `/data`.
 
-### 7. Verify Container Status
+### 7. Check Status
 
 ```powershell
 docker ps
-```
-
-Expected result: `mcegold-discovery` is running and ports `8000` and `3000` are listed.
-
-For all containers, including stopped containers:
-
-```powershell
 docker ps -a
 ```
 
-### 8. Open the Portal
+The `mcegold-discovery` container should be running.
+
+### 8. Check Health
+
+```powershell
+docker inspect --format '{{.State.Health.Status}}' mcegold-discovery
+```
+
+The health status should become `healthy` after the Portal starts. First startup may take longer while the SQLite discovery database is initialized.
+
+### 9. View Logs
+
+```powershell
+docker logs mcegold-discovery
+docker logs -f mcegold-discovery
+```
+
+### 10. Open the Portal
 
 ```powershell
 Start-Process "http://localhost:8000"
 ```
 
-### 9. Open Grafana
+If connecting from another machine, use the Windows Docker host name or IP address instead of `localhost`.
+
+### 11. Open Grafana
 
 ```powershell
 Start-Process "http://localhost:3000"
 ```
 
-Grafana may take longer than the Portal to become ready on first startup.
+Grafana may take longer than the Portal to become ready.
 
-## First-Time Setup
-
-After the container is running:
-
-1. Open the Portal at `http://localhost:8000`.
-2. Open **Settings**.
-3. Configure the MCEGold Data Services connection.
-4. Save settings.
-5. Start the first discovery.
-6. Verify discovery results in the guided workflow.
-7. Open Grafana at `http://localhost:3000`.
-
-The published single-image deployment already includes the Connector CLI. Users do not need to install it manually.
-
-## Container Management
-
-Linux Bash:
-
-```bash
-docker ps
-docker stop mcegold-discovery
-docker start mcegold-discovery
-docker restart mcegold-discovery
-docker logs mcegold-discovery
-docker logs -f mcegold-discovery
-```
-
-Windows PowerShell:
+### 12. Stop, Start, or Restart
 
 ```powershell
-docker ps
 docker stop mcegold-discovery
 docker start mcegold-discovery
 docker restart mcegold-discovery
-docker logs mcegold-discovery
-docker logs -f mcegold-discovery
 ```
 
-## Upgrade
+### 13. Upgrade While Preserving Data
 
-Do not delete volumes during a normal upgrade.
-
-Linux Bash:
-
-```bash
-docker stop mcegold-discovery
-docker rm mcegold-discovery
-docker load -i ./mcegold-discovery-newer-image.tar
-IMAGE="<new-loaded-image-name>:<new-loaded-tag>"
-docker run -d \
-  --name mcegold-discovery \
-  --restart unless-stopped \
-  -p 8000:8000 \
-  -p 3000:3000 \
-  -v mcegold-config:/config \
-  -v mcegold-data:/data \
-  "$IMAGE"
-```
-
-Windows PowerShell:
+Do not remove `mcegold-config` or `mcegold-data` during a normal upgrade.
 
 ```powershell
 docker stop mcegold-discovery
 docker rm mcegold-discovery
-docker load -i .\mcegold-discovery-newer-image.tar
-$Image = "<new-loaded-image-name>:<new-loaded-tag>"
+docker load -i .\mcegold-discovery-<new-version>-linux-amd64.tar.gz
+docker image ls mcegold-discovery
+$Image = "mcegold-discovery:<new-version>"
 docker run -d `
   --name mcegold-discovery `
   --restart unless-stopped `
@@ -298,22 +303,9 @@ docker run -d `
   $Image
 ```
 
-Use the exact newer image tag printed by `docker load`.
+### 14. Clean Reset
 
-## Clean Reset
-
-This procedure is destructive. It deletes local configuration, the SQLite discovery database, and Grafana data.
-
-Linux Bash:
-
-```bash
-docker stop mcegold-discovery
-docker rm mcegold-discovery
-docker volume rm mcegold-config
-docker volume rm mcegold-data
-```
-
-Windows PowerShell:
+Warning: this deletes local configuration, the local SQLite discovery database, and persistent Grafana/runtime state stored in the named volumes.
 
 ```powershell
 docker stop mcegold-discovery
@@ -323,6 +315,28 @@ docker volume rm mcegold-data
 ```
 
 After a clean reset, recreate the volumes and run the container again.
+
+## First-Time Setup
+
+After the container is running:
+
+1. Open the Portal at `http://localhost:8000`.
+2. Open **Settings**.
+3. Configure the MCEGold Data Services URL and credentials.
+4. Save settings.
+5. Start the first top-down discovery.
+6. Follow Site -> Segment -> Measurement Location -> Measurements.
+7. Open Grafana at `http://localhost:3000`.
+
+The published single-image appliance already includes the Connector CLI.
+
+## Persistence and Upgrades
+
+`mcegold-config` stores appliance configuration under `/config`.
+
+`mcegold-data` stores the SQLite discovery database and persistent runtime data under `/data`.
+
+Removing or replacing the container does not remove these volumes. Normal upgrades preserve data by reusing both volumes with the newer image. A clean reset intentionally removes both volumes and discards the saved state.
 
 ## Troubleshooting
 

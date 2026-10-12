@@ -2,11 +2,11 @@
 
 [Back to README](../README.md)
 
-The Portal supports guided top-down discovery and works with the Publication Collector for incoming publication data.
+The appliance supports guided top-down discovery and publication-driven collection. Both paths store local data in the SQLite discovery database.
 
 ## Top-Down Discovery
 
-Top-down discovery starts with broad context and narrows toward measurement data:
+Top-down discovery starts with broad operational context and narrows toward measurement data:
 
 ```text
 Site -> Segment -> Measurement Location -> Measurements
@@ -21,20 +21,40 @@ The Portal guides the user through each step:
 5. Preview Measurements for that Measurement Location.
 6. End discovery when finished.
 
-This path helps users keep operational context while exploring available MCEGold data.
+This workflow keeps each request tied to the selected parent context. It helps users understand the MCEGold hierarchy before inspecting measurement values.
+
+## Site
+
+The Site step discovers available Sites from MCEGold Data Services. A Site is the top-level operational context for the guided workflow.
+
+## Segment
+
+The Segment step requires a selected Site. It discovers Segments under that Site and can use type information from local reference data where available.
+
+## Measurement Location
+
+The Measurement Location step requires a selected Segment. It discovers Measurement Locations under that Segment. A Measurement Location is the point, sensor, or logical location where measurements are observed.
+
+## Measurements
+
+The Measurements step requires a selected Measurement Location. It previews measurement values for that location, with bounded result limits and optional recorded-time filters.
+
+This preview is for discovery and validation. Grafana is the primary bundled surface for dashboard-style inspection of persisted measurement data.
 
 ## Publication Collector
 
-The Publication Collector runs in the default container and processes MCEGold publications. It uses the configured Connector CLI and connection settings, then writes runtime status and incoming measurement data to the local SQLite database.
+The Publication Collector runs in the default appliance. It uses the bundled Connector CLI and configured MCEGold Data Services connection settings, then stores incoming publication data and runtime status locally.
 
-The Portal Settings page exposes collector enablement, polling interval, and runtime status. The setting controls whether publication processing should be active; it is not a separate installer or manual CLI setup step for the default image.
+The Portal Settings page exposes collector enablement, polling interval, and runtime status. No separate Connector CLI installation is required for the published single-image appliance.
 
 ## Bottom-Up Discovery
 
-Bottom-up discovery is the conceptual counterpart to the guided top-down workflow. When incoming publication data references measurement context that is not already present locally, the deployment may need to discover or persist the missing hierarchy around that measurement.
+Bottom-up discovery is the conceptual counterpart to the guided top-down workflow. Publication-driven processing may encounter incoming measurement data before all local hierarchy or context has been established. In that case, the appliance may need to establish or persist the missing local context around the incoming measurement data.
 
-At a user level, this means publication processing and guided discovery both contribute to the same local SQLite discovery database. The public documentation intentionally avoids proprietary Connector internals and lower-level implementation details.
+Public documentation intentionally keeps this explanation conceptual and avoids proprietary Connector internals.
 
-## Grafana View
+## Persistence
 
-Grafana reads from the SQLite database and displays discovered or collected measurement data. It is useful after top-down discovery has stored entities or after the Publication Collector has processed incoming publications.
+Discovered entities and measurements are stored in the SQLite discovery database. Guided discovery and publication processing both contribute to the same local persistence layer.
+
+Grafana reads from the SQLite discovery database and displays discovered or collected measurement data.
