@@ -18,27 +18,11 @@ The appliance is intended for demos, evaluation, and integration planning. It is
 
 ## High-Level Flow
 
-```text
-MCEGold Data Services
-        |
-        v
-Connector CLI
-        |
-        +----------------------+
-        |                      |
-        v                      v
-Discovery Portal      Publication Collector
-        |                      |
-        +----------+-----------+
-                   |
-                   v
-          SQLite discovery database
-                   |
-                   v
-                Grafana
-```
+![MCEGold Discovery Portal single-container system architecture](images/MCEGold%20Discovery%20Portal%20Architecture%20Diagram.png)
 
-The Connector CLI is the public integration boundary used by the appliance to communicate with MCEGold Data Services. The Portal and Publication Collector both use the CLI, then persist local data in the shared SQLite discovery database. Grafana reads from that SQLite database through the provisioned SQLite datasource.
+The Connector CLI is the public integration boundary used by the appliance to communicate with MCEGold Data Services. The Portal and Publication Collector invoke the bundled CLI independently; the diagram represents this shared integration boundary, not a single shared CLI process or session. The Collector does not call the Portal's discovery API or depend on its interactive workflow.
+
+The Portal provides the Web UI and API on port `8000`, performs guided discovery, and reads and writes local discovery data. The Publication Collector receives measurement publications and writes collected measurements, discovered reference context, and runtime status directly to the shared SQLite database. Grafana serves dashboards on port `3000` and reads that database through the provisioned SQLite datasource.
 
 ## Component Responsibilities
 
@@ -46,8 +30,8 @@ The Connector CLI is the public integration boundary used by the appliance to co
 | --- | --- |
 | MCEGold Data Services | External source of discovery and publication data |
 | Connector CLI | Command-line bridge used by the Portal and Publication Collector |
-| MCEGold Discovery Portal | User-facing configuration, connector status, and guided top-down discovery workflow |
-| Publication Collector | Background processor for incoming publication data |
+| MCEGold Discovery Portal | Web UI and API for configuration, connector status, guided top-down discovery, and local discovery data access |
+| Publication Collector | Background processor for incoming measurement publications and targeted reference-data enrichment |
 | SQLite discovery database | Shared local persistence for application settings, discovered entities, runtime status, reference dimensions, and measurements |
 | Grafana | Dashboard view over the local SQLite discovery database |
 
@@ -60,7 +44,9 @@ The default persistent paths are:
 | `/config` | Local appliance configuration files |
 | `/data` | SQLite discovery database and persistent runtime data |
 
-The Portal initializes the SQLite discovery database when needed. The Publication Collector waits for the Portal-owned database schema to be ready before it starts processing. Grafana reads from the local SQLite database.
+The diagram shows both persistent directories conceptually. `/config` supplies configuration to the appliance components; it does not store the SQLite database. `/data` contains `discovery_portal.db` and Grafana runtime data.
+
+The Portal initializes the SQLite discovery database when needed. The Publication Collector waits for the Portal-owned database schema to be ready before it starts processing, then writes directly to that database. Grafana reads from the local SQLite database.
 
 Fresh databases are created at the current supported schema. Older pre-release or incompatible databases are not automatically upgraded.
 
@@ -73,7 +59,5 @@ The reference-data seed supports discovery selectors and reporting context. It d
 The reference data remains third-party material. See [Third-Party Notices](../THIRD-PARTY-NOTICES.md).
 
 ## Grafana Dashboard
-
-![MCEGold Grafana dashboard showing discovered measurements](images/MCEGold_Dashboard.png)
 
 The bundled Grafana dashboard provides an operational view of local SQLite discovery data. Grafana is a dashboard surface; the SQLite discovery database is the local persistence layer.
