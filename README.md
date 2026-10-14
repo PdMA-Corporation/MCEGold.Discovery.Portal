@@ -16,27 +16,11 @@ The Portal focuses on guided top-down discovery from Site to Segment to Measurem
 
 ## Architecture at a Glance
 
-```text
-MCEGold Data Services
-        |
-        v
-Connector CLI
-        |
-        +----------------------+
-        |                      |
-        v                      v
-Discovery Portal      Publication Collector
-        |                      |
-        +----------+-----------+
-                   |
-                   v
-          SQLite discovery database
-                   |
-                   v
-                Grafana
-```
+![MCEGold Discovery Portal single-container system architecture](docs/images/MCEGold%20Discovery%20Portal%20Architecture%20Diagram.png)
 
-The Connector CLI is the integration boundary to MCEGold Data Services. The Portal and Publication Collector both use it, then persist local data in SQLite. Grafana reads from that SQLite data.
+The Connector CLI is the integration boundary to MCEGold Data Services. The Portal and Publication Collector invoke it independently, then persist local data in the shared SQLite discovery database. Grafana reads from that database. See [Architecture](docs/architecture.md) for component and persistence details.
+
+The appliance supports two independent discovery approaches: human-guided top-down discovery in the Portal and publication-driven bottom-up enrichment in the Collector. Both contribute to the same local discovery database without the Collector calling Portal discovery endpoints. See [Discovery Workflows](docs/workflows.md) for details.
 
 ## Included Components
 

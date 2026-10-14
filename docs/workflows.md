@@ -2,11 +2,13 @@
 
 [Back to README](../README.md)
 
-The appliance supports guided top-down discovery and publication-driven collection. Both paths store local data in the SQLite discovery database.
+The appliance supports two independent approaches to discovery. Both persist discovered information in the shared SQLite discovery database, which Grafana reads for visualization.
 
-## Top-Down Discovery
+![Human-guided top-down and publication-driven bottom-up discovery approaches](images/MCEGold%20Discovery%20Approaches%20Flowchart.png)
 
-Top-down discovery starts with broad operational context and narrows toward measurement data:
+## Human-Guided Top-Down Discovery
+
+The Discovery Portal uses Consumer Request sessions to start with broad operational context and narrow toward measurement data:
 
 ```text
 Site -> Segment -> Measurement Location -> Measurements
@@ -41,20 +43,18 @@ The Measurements step requires a selected Measurement Location. It previews meas
 
 This preview is for discovery and validation. Grafana is the primary bundled surface for dashboard-style inspection of persisted measurement data.
 
-## Publication Collector
+## Publication-Driven Bottom-Up Discovery
 
-The Publication Collector runs in the default appliance. It uses the bundled Connector CLI and configured MCEGold Data Services connection settings, then stores incoming publication data and runtime status locally.
+The Publication Collector runs independently of the Portal's interactive workflow. It primarily receives measurement publications through Publication sessions and stores incoming measurement data and runtime status locally.
 
-The Portal Settings page exposes collector enablement, polling interval, and runtime status. No separate Connector CLI installation is required for the published single-image appliance.
+When a publication references a Measurement Location that is not yet known in the local database, the Collector can open its own temporary Consumer Request session. It retrieves the missing Measurement Location, Segment, and Site context as needed, persists that context, and then closes its Request session. This is targeted, on-demand reference enrichment initiated by an incoming publication; it is not a complete top-down inventory crawl.
 
-## Bottom-Up Discovery
+The Collector does not invoke the Portal's discovery endpoints or require a user to run the Portal workflow. Both applications use the bundled Connector CLI independently with the configured MCEGold Data Services connection settings.
 
-Bottom-up discovery is the conceptual counterpart to the guided top-down workflow. Publication-driven processing may encounter incoming measurement data before all local hierarchy or context has been established. In that case, the appliance may need to establish or persist the missing local context around the incoming measurement data.
-
-Public documentation intentionally keeps this explanation conceptual and avoids proprietary Connector internals.
+The Portal Settings page exposes Collector enablement, polling interval, and runtime status. No separate Connector CLI installation is required for the published single-image appliance.
 
 ## Persistence
 
-Discovered entities and measurements are stored in the SQLite discovery database. Guided discovery and publication processing both contribute to the same local persistence layer.
+Discovered entities and measurements are stored in the shared SQLite discovery database. Guided discovery and publication-driven enrichment both contribute to the same local persistence layer.
 
 Grafana reads from the SQLite discovery database and displays discovered or collected measurement data.
