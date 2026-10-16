@@ -1,6 +1,8 @@
 import logging
+import re
 import sqlite3
 import threading
+from functools import wraps
 from decimal import Decimal, InvalidOperation
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -54,7 +56,7 @@ from app.storage.reference_data_repository import (
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 logger = logging.getLogger("mcegold.discovery")
-discovery_session_lock = threading.Lock()
+discovery_session_lock = threading.RLock()
 
 COLLECTOR_STATUS_BADGE_CLASSES = {
     "Running": "text-bg-success",
@@ -137,33 +139,48 @@ def refresh_saved_portal_settings(local_config: dict[str, str]) -> None:
         object.__setattr__(settings, field_name, value)
 
 
+def session_connection_identity(local_config: dict[str, str]) -> tuple:
+    # Compare effective values so an overridden or unrelated UI edit is harmless.
+    return (
+        tuple(sorted(resolve_data_services_environment(local_config).items())),
+        resolve_portal_config_value("connector_config_path", local_config)[0],
+        resolve_portal_config_value("mcegold_cli_path", local_config)[0],
+    )
+
+
 def invalidate_cached_discovery_client(request: Request) -> None:
     if hasattr(request.app.state, "discovery_client"):
         delattr(request.app.state, "discovery_client")
 
 
 def get_discovery_client(request: Request) -> DiscoveryClient:
-    client = getattr(request.app.state, "discovery_client", None)
-    if client is None:
-        client = create_discovery_client()
-        request.app.state.discovery_client = client
-    return client
+    with discovery_session_lock:
+        client = getattr(request.app.state, "discovery_client", None)
+        if client is None:
+            client = create_discovery_client()
+            request.app.state.discovery_client = client
+        return client
 
 
 def get_site_service(request: Request) -> SiteDiscoveryService:
-    return SiteDiscoveryService(get_discovery_client(request))
+    return SiteDiscoveryService(get_operation_discovery_client(request))
 
 
 def get_segment_service(request: Request) -> SegmentDiscoveryService:
-    return SegmentDiscoveryService(get_discovery_client(request))
+    return SegmentDiscoveryService(get_operation_discovery_client(request))
 
 
 def get_location_service(request: Request) -> MeasurementLocationDiscoveryService:
-    return MeasurementLocationDiscoveryService(get_discovery_client(request))
+    return MeasurementLocationDiscoveryService(get_operation_discovery_client(request))
 
 
 def get_measurement_service(request: Request) -> MeasurementDiscoveryService:
-    return MeasurementDiscoveryService(get_discovery_client(request))
+    return MeasurementDiscoveryService(get_operation_discovery_client(request))
+
+
+def get_operation_discovery_client(request: Request) -> DiscoveryClient:
+    client = getattr(request.state, "discovery_operation_client", None)
+    return client if client is not None else get_discovery_client(request)
 
 
 def get_connector_status(request: Request) -> dict[str, object]:
@@ -181,18 +198,31 @@ def get_get_sites_diagnostics(request: Request) -> dict[str, object] | None:
 
 
 def get_discovery_session_id(request: Request) -> str | None:
-    value = getattr(request.app.state, "discovery_session_id", None)
-    return str(value) if value else None
+    with discovery_session_lock:
+        value = getattr(request.app.state, "discovery_session_id", None)
+        return str(value) if value else None
+
+
+def capture_discovery_operation(request: Request) -> tuple[str | None, int]:
+    """Keep one attempt's client, session and connection generation together."""
+    with discovery_session_lock:
+        session_id = get_discovery_session_id(request)
+        generation = getattr(request.app.state, "discovery_connection_generation", 0)
+        request.state.discovery_operation_client = get_discovery_client(request)
+        request.state.discovery_operation_session_id = session_id
+        request.state.discovery_operation_connection_generation = generation
+        return session_id, generation
 
 
 def get_discovery_session_status(request: Request) -> dict[str, object]:
-    session_id = get_discovery_session_id(request)
-    return {
-        "active": bool(session_id),
-        "sessionId": session_id,
-        "shortSessionId": shorten_session_id(session_id),
-        "startedAt": getattr(request.app.state, "discovery_started_at", None),
-    }
+    with discovery_session_lock:
+        session_id = get_discovery_session_id(request)
+        return {
+            "active": bool(session_id),
+            "sessionId": session_id,
+            "shortSessionId": shorten_session_id(session_id),
+            "startedAt": getattr(request.app.state, "discovery_started_at", None),
+        }
 
 
 def shorten_session_id(session_id: str | None) -> str:
@@ -216,17 +246,18 @@ def log_cli_call(request: Request, operation: str) -> None:
 
 
 def mirror_shared_discovery_session(request: Request) -> None:
-    session_id = get_discovery_session_id(request)
-    if session_id:
-        request.session["discovery_session_id"] = session_id
-        request.session["discovery_started_at"] = getattr(
-            request.app.state,
-            "discovery_started_at",
-            None,
-        )
-    else:
-        request.session.pop("discovery_session_id", None)
-        request.session.pop("discovery_started_at", None)
+    with discovery_session_lock:
+        session_id = get_discovery_session_id(request)
+        if session_id:
+            request.session["discovery_session_id"] = session_id
+            request.session["discovery_started_at"] = getattr(
+                request.app.state,
+                "discovery_started_at",
+                None,
+            )
+        else:
+            request.session.pop("discovery_session_id", None)
+            request.session.pop("discovery_started_at", None)
 
 
 def require_discovery_session(request: Request):
@@ -238,34 +269,53 @@ def require_discovery_session(request: Request):
 
 
 def set_discovery_session(request: Request, session_id: str) -> None:
-    clear_selected_workflow_context(request)
-    started_at = datetime.now(timezone.utc).isoformat()
-    request.app.state.discovery_session_id = session_id
-    request.app.state.discovery_started_at = started_at
-    request.session["discovery_session_id"] = session_id
-    request.session["discovery_started_at"] = started_at
+    with discovery_session_lock:
+        refresh_discovery_session(request, session_id)
+        clear_selected_workflow_context(request)
 
 
 def refresh_discovery_session(request: Request, session_id: str) -> None:
-    started_at = datetime.now(timezone.utc).isoformat()
-    request.app.state.discovery_session_id = session_id
-    request.app.state.discovery_started_at = started_at
-    request.session["discovery_session_id"] = session_id
-    request.session["discovery_started_at"] = started_at
+    with discovery_session_lock:
+        started_at = datetime.now(timezone.utc).isoformat()
+        persist_discovery_session(request, session_id, started_at)
+        request.app.state.discovery_session_id = session_id
+        request.app.state.discovery_started_at = started_at
+        mirror_shared_discovery_session(request)
+
+
+def persist_discovery_session(request: Request, session_id: str | None, started_at: str | None) -> None:
+    try:
+        application_settings_repository(request).set_request_session(session_id, started_at)
+    except sqlite3.Error as exc:
+        logger.error("Could not persist discovery session state (%s).", type(exc).__name__)
+        raise HTTPException(status_code=503, detail="Could not save discovery session state. Please retry.") from exc
 
 
 def clear_shared_discovery_session(request: Request) -> None:
-    if hasattr(request.app.state, "discovery_session_id"):
-        delattr(request.app.state, "discovery_session_id")
-    if hasattr(request.app.state, "discovery_started_at"):
-        delattr(request.app.state, "discovery_started_at")
+    with discovery_session_lock:
+        persist_discovery_session(request, None, None)
+        for attr in ("discovery_session_id", "discovery_started_at"):
+            if hasattr(request.app.state, attr):
+                delattr(request.app.state, attr)
 
 
-def clear_discovery_session(request: Request) -> None:
-    clear_shared_discovery_session(request)
-    request.session.pop("discovery_session_id", None)
-    request.session.pop("discovery_started_at", None)
-    clear_selected_workflow_context(request)
+def clear_discovery_session(
+    request: Request, expected_session_id: str | None, *, preserve_workflow: bool = False,
+    expected_connection_generation: int | None = None,
+) -> bool:
+    with discovery_session_lock:
+        if (
+            expected_connection_generation is not None
+            and getattr(request.app.state, "discovery_connection_generation", 0) != expected_connection_generation
+        ):
+            return False
+        if get_discovery_session_id(request) != expected_session_id:
+            return False
+        clear_shared_discovery_session(request)
+        mirror_shared_discovery_session(request)
+        if not preserve_workflow:
+            clear_selected_workflow_context(request)
+        return True
 
 
 def clear_selected_workflow_context(request: Request) -> None:
@@ -535,8 +585,8 @@ def require_admin_controls_enabled() -> None:
 
 def is_closed_cli_session_error(exc: CliDiscoveryError) -> bool:
     fault = exc.fault if isinstance(exc.fault, dict) else {}
-    text = " ".join(
-        str(value)
+    messages = [
+        str(value).casefold()
         for value in (
             fault.get("code"),
             fault.get("message"),
@@ -545,17 +595,58 @@ def is_closed_cli_session_error(exc: CliDiscoveryError) -> bool:
             exc.friendly_message,
         )
         if value
-    ).casefold()
-    return "session" in text and ("closed" in text or "does not exist" in text)
+    ]
+    # A closed connection or a command echo containing --session-id is not
+    # confirmation that the server's Request Session was invalidated.
+    code = re.sub(r"[^a-z]", "", str(fault.get("code", "")).casefold())
+    if code in {"sessionclosed", "requestsessionclosed", "sessiondoesnotexist", "requestsessiondoesnotexist"}:
+        return True
+    return any(re.search(
+        r"\bsession\b(?:\s+(?:with\s+)?id)?(?:\s*[:=]?\s*[\"']?[\w-]+[\"']?)?"
+        r"\s+(?:(?:is|was|has been|has already been|is already)\s+)?(?:closed|does not exist)\b"
+        r"|\bclosed\s+(?:consumer\s+)?(?:request\s+)?session\b",
+        message,
+    ) for message in messages)
 
 
-def reopen_cli_session_for_retry(request: Request) -> str | None:
-    client = get_discovery_client(request)
-    if not isinstance(client, MceGoldCliDiscoveryClient):
-        return None
+def open_and_persist_discovery_session(request: Request, client: DiscoveryClient, *, refresh: bool = False) -> str:
     session_id = client.open_request_session()
-    refresh_discovery_session(request, session_id)
+    if not session_id or not session_id.strip():
+        raise CliDiscoveryError("The MCEGold CLI did not return an active session ID.", command=[])
+    try:
+        if refresh:
+            refresh_discovery_session(request, session_id)
+        else:
+            set_discovery_session(request, session_id)
+    except HTTPException:
+        try:
+            client.close_request_session(session_id)
+        except Exception:
+            logger.warning("Could not close newly opened session after persistence failure.")
+        raise
     return session_id
+
+
+def reopen_cli_session_for_retry(
+    request: Request, failed_session_id: str | None, *, expected_connection_generation: int | None = None,
+) -> str | None:
+    with discovery_session_lock:
+        if (
+            expected_connection_generation is not None
+            and getattr(request.app.state, "discovery_connection_generation", 0) != expected_connection_generation
+        ):
+            return None
+        current = get_discovery_session_id(request)
+        if current != failed_session_id:
+            return current
+        clear_discovery_session(
+            request, failed_session_id, preserve_workflow=True,
+            expected_connection_generation=expected_connection_generation,
+        )
+        client = get_discovery_client(request)
+        if not isinstance(client, MceGoldCliDiscoveryClient):
+            return None
+        return open_and_persist_discovery_session(request, client, refresh=True)
 
 
 def get_or_open_shared_discovery_session(request: Request, client: DiscoveryClient) -> str:
@@ -565,9 +656,27 @@ def get_or_open_shared_discovery_session(request: Request, client: DiscoveryClie
             mirror_shared_discovery_session(request)
             clear_selected_workflow_context(request)
             return session_id
-        session_id = client.open_request_session()
-        set_discovery_session(request, session_id)
-        return session_id
+        return open_and_persist_discovery_session(request, client)
+
+
+def api_discovery_session_errors(endpoint):
+    """Track the ID used by API requests, including their parent lookups."""
+    @wraps(endpoint)
+    def wrapped(request: Request, *args, **kwargs):
+        session_id, connection_generation = capture_discovery_operation(request)
+        try:
+            return endpoint(request, *args, **kwargs)
+        except CliDiscoveryError as exc:
+            if is_closed_cli_session_error(exc):
+                clear_discovery_session(
+                    request, session_id, expected_connection_generation=connection_generation,
+                )
+            return JSONResponse(status_code=502, content={"success": False, "error": exc.to_safe_dict()})
+    return wrapped
+
+
+def operation_session_id(request: Request) -> str | None:
+    return getattr(request.state, "discovery_operation_session_id", get_discovery_session_id(request))
 
 
 def store_selected_site(request: Request, *, uuid: str, name: str, site_type: str) -> None:
@@ -849,7 +958,7 @@ def reference_entry_json(entry) -> dict[str, str | None]:
 
 def require_site(request: Request, site_uuid: str) -> Site:
     try:
-        site = get_site_service(request).get_site(site_uuid, get_discovery_session_id(request))
+        site = get_site_service(request).get_site(site_uuid, operation_session_id(request))
     except CliDiscoveryError:
         raise
     if site is None:
@@ -864,7 +973,7 @@ def require_segment(request: Request, site_uuid: str, segment_uuid: str) -> Segm
             (
                 item
                 for item in get_segment_service(request).get_segments(
-                    site_uuid, discovery_session_id=get_discovery_session_id(request)
+                    site_uuid, discovery_session_id=operation_session_id(request)
                 )
                 if item.segment_uuid == segment_uuid
             ),
@@ -883,7 +992,7 @@ def require_location(request: Request, site_uuid: str, segment_uuid: str, locati
         location = get_location_service(request).get_location(
             location_uuid,
             segment_uuid,
-            discovery_session_id=get_discovery_session_id(request),
+            discovery_session_id=operation_session_id(request),
         )
     except CliDiscoveryError:
         raise
@@ -925,6 +1034,11 @@ def settings_page(request: Request) -> HTMLResponse:
 async def save_settings(request: Request) -> HTMLResponse:
     require_admin_controls_enabled()
     form = await read_urlencoded_form(request)
+    with discovery_session_lock:
+        return save_settings_form(request, form)
+
+
+def save_settings_form(request: Request, form: dict[str, str]) -> HTMLResponse:
     values = {
         "mcegold_data_services_url": form.get("mcegold_data_services_url", "").strip(),
         "mcegold_username": form.get("mcegold_username", "").strip(),
@@ -972,6 +1086,7 @@ async def save_settings(request: Request) -> HTMLResponse:
         )
 
     local_config = read_portal_local_config(settings.portal_local_config_path)
+    previous_connection = session_connection_identity(local_config)
     for field_name, value in values.items():
         local_key = str(PORTAL_LOCAL_CONFIG_FIELDS[field_name]["local"])
         if field_name in MCEGOLD_DATA_SERVICES_FIELDS and not value:
@@ -984,8 +1099,17 @@ async def save_settings(request: Request) -> HTMLResponse:
             local_config.pop(local_key, None)
         elif value:
             local_config[local_key] = value
+    if session_connection_identity(local_config) != previous_connection:
+        clear_discovery_session(request, get_discovery_session_id(request))
+        request.app.state.discovery_connection_generation = getattr(
+            request.app.state, "discovery_connection_generation", 0,
+        ) + 1
+        # A later write or Connector sync may fail after changing the connection.
+        invalidate_cached_discovery_client(request)
     try:
         write_portal_local_config(local_config, settings.portal_local_config_path)
+        # Keep client paths aligned with the saved Portal config even if sync fails.
+        refresh_saved_portal_settings(local_config)
         synchronize_connector_config_from_portal(local_config, values["connector_config_path"])
     except (ConnectorConfigSyncError, OSError):
         return templates.TemplateResponse(
@@ -1017,8 +1141,6 @@ async def save_settings(request: Request) -> HTMLResponse:
             ),
             status_code=400,
         )
-    refresh_saved_portal_settings(local_config)
-    invalidate_cached_discovery_client(request)
     return templates.TemplateResponse(
         request,
         "settings.html",
@@ -1032,34 +1154,36 @@ async def save_settings(request: Request) -> HTMLResponse:
 @router.post("/discovery/start")
 @router.get("/discovery/start", include_in_schema=False)
 def start_discovery(request: Request):
-    client = get_discovery_client(request)
-    if not isinstance(client, MceGoldCliDiscoveryClient):
-        client = create_discovery_client()
-        request.app.state.discovery_client = client
-    try:
-        get_or_open_shared_discovery_session(request, client)
-    except CliDiscoveryError as exc:
-        request.session["discovery_start_error"] = exc.to_safe_dict()
-        return RedirectResponse("/?message=open_failed", status_code=303)
-    return RedirectResponse("/discovery/sites", status_code=303)
+    with discovery_session_lock:
+        client = get_discovery_client(request)
+        if not isinstance(client, MceGoldCliDiscoveryClient):
+            client = create_discovery_client()
+            request.app.state.discovery_client = client
+        try:
+            get_or_open_shared_discovery_session(request, client)
+        except CliDiscoveryError as exc:
+            request.session["discovery_start_error"] = exc.to_safe_dict()
+            return RedirectResponse("/?message=open_failed", status_code=303)
+        return RedirectResponse("/discovery/sites", status_code=303)
 
 
 @router.post("/discovery/end")
 @router.get("/discovery/end", include_in_schema=False)
 def end_discovery(request: Request):
     require_admin_controls_enabled()
-    close_failed = False
-    session_id = get_discovery_session_id(request)
-    if session_id:
-        client = get_discovery_client(request)
-        if isinstance(client, MceGoldCliDiscoveryClient):
-            try:
-                client.close_request_session(session_id)
-            except CliDiscoveryError:
-                close_failed = True
-    clear_discovery_session(request)
-    target = "/?message=close_failed" if close_failed else "/"
-    return RedirectResponse(target, status_code=303)
+    with discovery_session_lock:
+        close_failed = False
+        session_id = get_discovery_session_id(request)
+        if session_id:
+            client = get_discovery_client(request)
+            if isinstance(client, MceGoldCliDiscoveryClient):
+                try:
+                    client.close_request_session(session_id)
+                except CliDiscoveryError:
+                    close_failed = True
+        clear_discovery_session(request, session_id)
+        target = "/?message=close_failed" if close_failed else "/"
+        return RedirectResponse(target, status_code=303)
 
 
 @router.get("/discovery/sites", response_class=HTMLResponse)
@@ -1067,17 +1191,18 @@ def discovery_sites(request: Request) -> HTMLResponse:
     redirect = require_discovery_session(request)
     if redirect:
         return redirect
+    session_id, connection_generation = capture_discovery_operation(request)
     sites: list[Site] = []
     connector_error: dict[str, object] | None = None
     try:
         log_cli_call(request, "GetSites")
         sites = get_site_service(request).get_sites(
-            discovery_session_id=get_discovery_session_id(request)
+            discovery_session_id=session_id
         )
         persist_discovered_sites(request, sites)
     except CliDiscoveryError as exc:
         if is_closed_cli_session_error(exc):
-            clear_discovery_session(request)
+            clear_discovery_session(request, session_id, expected_connection_generation=connection_generation)
         connector_error = exc.to_safe_dict()
     return templates.TemplateResponse(
         request,
@@ -1249,13 +1374,15 @@ def discovery_segments(
     max_items: str | None = None,
     searched: bool = False,
 ) -> HTMLResponse:
-    redirect = require_discovery_session(request)
-    if redirect:
-        return redirect
-    site = get_selected_site(request, site_uuid)
-    if site is None:
-        return workflow_context_required_response(request)
-    segment_service = get_segment_service(request)
+    with discovery_session_lock:
+        redirect = require_discovery_session(request)
+        if redirect:
+            return redirect
+        session_id, connection_generation = capture_discovery_operation(request)
+        site = get_selected_site(request, site_uuid)
+        if site is None:
+            return workflow_context_required_response(request)
+        segment_service = get_segment_service(request)
     segment_types = get_segment_type_entries(get_database_path(request))
     connector_error: dict[str, object] | None = None
     validation_error: str | None = None
@@ -1267,7 +1394,7 @@ def discovery_segments(
             segments = segment_service.get_segments(
                 site_uuid,
                 segment_type_entries=segment_types,
-                discovery_session_id=get_discovery_session_id(request),
+                discovery_session_id=session_id,
                 segment_type_uuid=segment_type_uuid,
                 max_items=parsed_max_items,
             )
@@ -1275,8 +1402,11 @@ def discovery_segments(
         except CliDiscoveryError as exc:
             if is_closed_cli_session_error(exc):
                 try:
-                    refreshed_session_id = reopen_cli_session_for_retry(request)
+                    refreshed_session_id = reopen_cli_session_for_retry(
+                        request, session_id, expected_connection_generation=connection_generation,
+                    )
                     if refreshed_session_id:
+                        session_id = refreshed_session_id
                         log_cli_call(request, "GetSegments")
                         segments = segment_service.get_segments(
                             site_uuid,
@@ -1290,11 +1420,11 @@ def discovery_segments(
                         connector_error = exc.to_safe_dict()
                 except CliDiscoveryError as retry_exc:
                     if is_closed_cli_session_error(retry_exc):
-                        clear_discovery_session(request)
+                        clear_discovery_session(
+                            request, session_id, expected_connection_generation=connection_generation,
+                        )
                     connector_error = retry_exc.to_safe_dict()
             else:
-                if is_closed_cli_session_error(exc):
-                    clear_discovery_session(request)
                 connector_error = exc.to_safe_dict()
     return templates.TemplateResponse(
         request,
@@ -1331,6 +1461,7 @@ def discovery_measurement_locations(
     redirect = require_discovery_session(request)
     if redirect:
         return redirect
+    session_id, connection_generation = capture_discovery_operation(request)
     site = get_selected_site(request, site_uuid)
     segment = get_selected_segment(
         request,
@@ -1351,14 +1482,14 @@ def discovery_measurement_locations(
             locations = location_service.get_measurement_locations(
                 segment_uuid,
                 location_type_entries=location_types,
-                discovery_session_id=get_discovery_session_id(request),
+                discovery_session_id=session_id,
                 measurement_location_type_uuid=measurement_location_type_uuid,
                 max_items=parsed_max_items,
             )
             persist_discovered_measurement_locations(request, locations, site_uuid)
         except CliDiscoveryError as exc:
             if is_closed_cli_session_error(exc):
-                clear_discovery_session(request)
+                clear_discovery_session(request, session_id, expected_connection_generation=connection_generation)
             connector_error = exc.to_safe_dict()
     return templates.TemplateResponse(
         request,
@@ -1398,6 +1529,7 @@ def discovery_measurements(
     redirect = require_discovery_session(request)
     if redirect:
         return redirect
+    session_id, connection_generation = capture_discovery_operation(request)
     site = get_selected_site(request, site_uuid)
     segment = get_selected_segment(
         request,
@@ -1429,7 +1561,7 @@ def discovery_measurements(
             log_cli_call(request, "GetMeasurements")
             measurements = measurement_service.get_measurements(
                 location_uuid,
-                discovery_session_id=get_discovery_session_id(request),
+                discovery_session_id=session_id,
                 segment_uuid=segment_uuid,
                 recorded_from=normalized_from,
                 recorded_to=normalized_to,
@@ -1439,7 +1571,7 @@ def discovery_measurements(
             persist_discovered_measurements(request, measurements, location)
         except CliDiscoveryError as exc:
             if is_closed_cli_session_error(exc):
-                clear_discovery_session(request)
+                clear_discovery_session(request, session_id, expected_connection_generation=connection_generation)
             connector_error = exc.to_safe_dict()
     return templates.TemplateResponse(
         request,
@@ -1474,22 +1606,21 @@ def legacy_explorer_redirect() -> RedirectResponse:
 
 
 @router.get("/api/sites")
+@api_discovery_session_errors
 def api_sites(
     request: Request,
     site_type: str | None = None,
     status: str | None = None,
     search: str | None = None,
 ):
-    session_id = get_discovery_session_id(request)
-    try:
-        return get_site_service(request).get_sites(
-            site_type, status, search, discovery_session_id=session_id
-        )
-    except CliDiscoveryError as exc:
-        return JSONResponse(status_code=502, content={"success": False, "error": exc.to_safe_dict()})
+    session_id = operation_session_id(request)
+    return get_site_service(request).get_sites(
+        site_type, status, search, discovery_session_id=session_id
+    )
 
 
 @router.get("/api/sites/{site_uuid}/segments", response_model=list[Segment])
+@api_discovery_session_errors
 def api_segments(
     request: Request,
     site_uuid: str,
@@ -1510,7 +1641,7 @@ def api_segments(
         status,
         search,
         segment_type_entries=get_segment_type_entries(get_database_path(request)),
-        discovery_session_id=get_discovery_session_id(request),
+        discovery_session_id=operation_session_id(request),
         segment_type_uuid=segment_type_uuid,
         max_items=parsed_max_items,
     )
@@ -1520,6 +1651,7 @@ def api_segments(
     "/api/sites/{site_uuid}/segments/{segment_uuid}/measurement-locations",
     response_model=list[MeasurementLocation],
 )
+@api_discovery_session_errors
 def api_measurement_locations(
     request: Request,
     site_uuid: str,
@@ -1535,7 +1667,7 @@ def api_measurement_locations(
     return location_service.get_measurement_locations(
         segment_uuid,
         location_type_entries=get_measurement_location_type_entries(get_database_path(request)),
-        discovery_session_id=get_discovery_session_id(request),
+        discovery_session_id=operation_session_id(request),
         measurement_location_type_uuid=measurement_location_type_uuid,
         max_items=parsed_max_items,
     )
@@ -1545,6 +1677,7 @@ def api_measurement_locations(
     "/api/sites/{site_uuid}/segments/{segment_uuid}/measurement-locations/{location_uuid}/measurements",
     response_model=list[Measurement],
 )
+@api_discovery_session_errors
 def api_measurements(
     request: Request,
     site_uuid: str,
@@ -1565,7 +1698,7 @@ def api_measurements(
     measurement_service = get_measurement_service(request)
     return measurement_service.get_measurements(
         location_uuid,
-        discovery_session_id=get_discovery_session_id(request),
+        discovery_session_id=operation_session_id(request),
         segment_uuid=segment_uuid,
         recorded_from=normalized_from,
         recorded_to=normalized_to,

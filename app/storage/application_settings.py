@@ -9,6 +9,8 @@ from uuid import UUID
 
 
 SUPPORTED_VALUE_TYPES = {"Boolean", "Integer", "Decimal", "String", "Uuid"}
+REQUEST_SESSION_ID = "Discovery.RequestSessionId"
+REQUEST_SESSION_STARTED_UTC = "Discovery.RequestSessionStartedUtc"
 ENERGY_COST_RATE_SCALE = 6
 ENERGY_COST_RATE_VALIDATION_MESSAGE = (
     "EnergyCost.RatePerKwh must be a non-negative decimal with no more than 6 decimal places."
@@ -36,6 +38,8 @@ class ApplicationSetting:
 
 
 APPLICATION_SETTING_DEFAULTS: tuple[ApplicationSettingDefinition, ...] = (
+    ApplicationSettingDefinition(REQUEST_SESSION_ID, "String", None),
+    ApplicationSettingDefinition(REQUEST_SESSION_STARTED_UTC, "String", None),
     ApplicationSettingDefinition("EnergyCost.CurrencyUomUuid", "Uuid", None),
     ApplicationSettingDefinition("EnergyCost.RatePerKwh", "Decimal", None),
     ApplicationSettingDefinition("Collector.Enabled", "Boolean", "true"),
@@ -100,6 +104,35 @@ class ApplicationSettingsRepository:
                 (setting_key,),
             ).fetchone()
         return _setting_from_row(row) if row else None
+
+    def get_request_session(self) -> tuple[str | None, str | None]:
+        with self._connect() as connection:
+            values = dict(connection.execute(
+                "SELECT SettingKey, SettingValue FROM ApplicationSetting WHERE SettingKey IN (?, ?)",
+                (REQUEST_SESSION_ID, REQUEST_SESSION_STARTED_UTC),
+            ).fetchall())
+        session_id = values.get(REQUEST_SESSION_ID)
+        if not session_id or not session_id.strip():
+            return None, None
+        return session_id, values.get(REQUEST_SESSION_STARTED_UTC)
+
+    def set_request_session(self, session_id: str | None, started_utc: str | None) -> None:
+        """Publish or clear the Collector's session record as one atomic update."""
+        if not session_id or not session_id.strip():
+            session_id, started_utc = None, None
+        with self._connect() as connection:
+            connection.executemany(
+                """
+                INSERT INTO ApplicationSetting (SettingKey, SettingValue, ValueType, UpdatedUtc)
+                VALUES (?, ?, 'String', strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+                ON CONFLICT(SettingKey) DO UPDATE SET
+                    SettingValue = excluded.SettingValue,
+                    ValueType = excluded.ValueType,
+                    UpdatedUtc = excluded.UpdatedUtc
+                """,
+                ((REQUEST_SESSION_ID, session_id), (REQUEST_SESSION_STARTED_UTC, started_utc)),
+            )
+            connection.commit()
 
     def get_all_settings(self) -> dict[str, ApplicationSetting]:
         with self._connect() as connection:
