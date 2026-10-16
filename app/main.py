@@ -10,6 +10,7 @@ from app.api.routes import router
 from app.core.config import settings
 from app.services.reference_data_service import ReferenceDataService
 from app.storage.database import initialize_database
+from app.storage.application_settings import ApplicationSettingsRepository
 from app.storage.reference_data_seed import ReferenceDataSeedResult, ReferenceDataSeeder
 
 
@@ -28,6 +29,10 @@ async def lifespan(app: FastAPI):
     database_path = settings.discovery_database_path
     app.state.database_existed_before_initialization = Path(database_path).exists()
     app.state.database = initialize_database(database_path)
+    session_id, started_at = ApplicationSettingsRepository(database_path).get_request_session()
+    # This restores local state only; normal discovery calls validate the remote ID.
+    app.state.discovery_session_id = session_id
+    app.state.discovery_started_at = started_at
     reference_data = ReferenceDataService(
         settings.reference_data_path,
         settings.reference_data_sheet,
