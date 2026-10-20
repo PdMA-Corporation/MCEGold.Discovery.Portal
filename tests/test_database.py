@@ -63,6 +63,8 @@ REQUIRED_VIEWS = {
 }
 
 APPLICATION_SETTING_DEFAULTS = {
+    "Discovery.RequestSessionId": (None, "String"),
+    "Discovery.RequestSessionStartedUtc": (None, "String"),
     "Collector.Enabled": ("true", "Boolean"),
     "Collector.PollingIntervalSeconds": ("15", "Integer"),
     "DataRetention.Enabled": ("false", "Boolean"),

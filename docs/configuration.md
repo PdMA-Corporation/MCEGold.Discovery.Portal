@@ -76,11 +76,11 @@ The SQLite discovery database path is configured by `DISCOVERY_DATABASE_PATH` an
 /data/discovery_portal.db
 ```
 
-This database stores discovered entities, measurement data, application settings, reference dimensions, and runtime status used by the appliance.
+This database stores discovered entities, measurement data, application settings, reference dimensions, and runtime status used by the appliance. The Portal also persists its Consumer Request Session ID and original start timestamp here. With the same database retained, Portal or container restart restores the saved session information without automatically opening a replacement session. Restoration does not guarantee that the remote session remains valid. Shared Request Session support requires no SQLite schema change for an existing supported v1.0.0 database.
 
 ## Publication Collector Settings
 
-The Publication Collector runs inside the default appliance. User-facing collector settings are stored in the SQLite application settings table.
+The Publication Collector runs inside the default appliance. Enablement and polling controls exposed by the Portal are stored in SQLite.
 
 Verified defaults:
 
@@ -90,6 +90,25 @@ Verified defaults:
 | `Collector.PollingIntervalSeconds` | `15` | Polling interval for collector activity |
 
 The Portal Settings page also shows collector runtime status, last seen time, last publication time, and last error when available.
+
+Shared Request Session mode is configured separately in the Collector configuration file, `/config/collector.local.json`:
+
+```json
+{
+  "useSharedRequestSession": true
+}
+```
+
+Add or update this Boolean property in the existing JSON object, preserving the other settings. The environment variable `MCEGOLD_USE_SHARED_REQUEST_SESSION` overrides the file value and accepts `true` or `false`.
+
+| Deployment | Shared Request Session default |
+| --- | --- |
+| Standalone Collector | `false` |
+| Combined Portal + Collector v1.0.1 Docker image, with newly seeded configuration | `true` |
+
+An existing `/config/collector.local.json` is preserved during upgrades. Its settings are not replaced by the new image's defaults. To enable shared mode, explicitly set `useSharedRequestSession` to `true` in that file or supply `MCEGOLD_USE_SHARED_REQUEST_SESSION=true` to the container. Restart the Collector after changing its configuration; in the combined appliance, restart the container.
+
+In shared mode, the Collector reads the Portal-managed session information from the same live SQLite database used by the Portal, normally `/data/discovery_portal.db`. A copied database is not a substitute. The Portal owns the Consumer Request Session; the Collector does not open or close it. If no Portal session is available, reference enrichment is deferred until one is available. Start Discovery in the Portal to establish a session. With shared mode disabled, the Collector opens and closes its own temporary Consumer Request Session for enrichment. Publication sessions remain separate from this setting.
 
 ## Data Retention
 

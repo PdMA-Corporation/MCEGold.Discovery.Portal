@@ -25,6 +25,8 @@ The Portal guides the user through each step:
 
 This workflow keeps each request tied to the selected parent context. It helps users understand the MCEGold hierarchy before inspecting measurement values.
 
+The Portal owns and manages the Consumer Request Session. It persists the Session ID and original start timestamp in SQLite and restores them after a Portal or container restart when the database is retained. Restart does not automatically open a replacement session, and restored information does not guarantee that the remote session remains valid. See [Request Session Management](troubleshooting.md#known-limitations--request-session-management) for recovery behavior.
+
 ## Site
 
 The Site step discovers available Sites from MCEGold Data Services. A Site is the top-level operational context for the guided workflow.
@@ -47,9 +49,13 @@ This preview is for discovery and validation. Grafana is the primary bundled sur
 
 The Publication Collector runs independently of the Portal's interactive workflow. It primarily receives measurement publications through Publication sessions and stores incoming measurement data and runtime status locally.
 
-When a publication references a Measurement Location that is not yet known in the local database, the Collector can open its own temporary Consumer Request session. It retrieves the missing Measurement Location, Segment, and Site context as needed, persists that context, and then closes its Request session. This is targeted, on-demand reference enrichment initiated by an incoming publication; it is not a complete top-down inventory crawl.
+When a publication references a Measurement Location that is not yet known in the local database, the Collector retrieves the missing Measurement Location, Segment, and Site context as needed and persists that context. This is targeted, on-demand reference enrichment initiated by an incoming publication; it is not a complete top-down inventory crawl.
 
-The Collector does not invoke the Portal's discovery endpoints or require a user to run the Portal workflow. Both applications use the bundled Connector CLI independently with the configured MCEGold Data Services connection settings.
+With Shared Request Session mode enabled, the Collector reads the Portal-managed session information from the same live SQLite database and reuses that Consumer Request Session for enrichment. The Collector does not open or close the Portal-owned session. If none is available, enrichment is deferred; Start Discovery in the Portal establishes a session. The user does not need to complete the guided discovery steps for Collector enrichment to use it.
+
+With shared mode disabled, the Collector opens its own temporary Consumer Request Session for enrichment and closes that session afterward. The standalone Collector defaults to disabled shared mode; the combined v1.0.1 Docker image enables it in newly seeded configuration. See [Publication Collector Settings](configuration.md#publication-collector-settings) for configuration and upgrades.
+
+The Collector does not invoke the Portal's discovery endpoints. Both applications use the bundled Connector CLI independently with the configured MCEGold Data Services connection settings. Normal publication processing uses Publication sessions, separately from Consumer Request Sessions used for enrichment.
 
 The Portal Settings page exposes Collector enablement, polling interval, and runtime status. No separate Connector CLI installation is required for the published single-image appliance.
 

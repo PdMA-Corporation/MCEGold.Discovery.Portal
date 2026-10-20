@@ -88,21 +88,25 @@ If you intentionally want to discard all local state, use the clean reset proced
 
 ## Known Limitations — Request Session Management
 
-MCEGold Discovery Portal v1.0.0 uses one application-wide Consumer Request session for guided discovery. Multiple browser users share this Request session, while each browser keeps its own selected Site, Segment, and Measurement Location context. Start Discovery opens a Request session when none is stored locally; when a session ID is already stored, the Portal reuses it without first validating it against MCEGold Data Services.
+MCEGold Discovery Portal v1.0.1 owns and manages one application-wide Consumer Request Session. Multiple browser users share this Request Session, while each browser keeps its own selected Site, Segment, and Measurement Location context. Start Discovery opens a session when none is saved; otherwise it reuses the saved session without first validating it against MCEGold Data Services.
 
-End Discovery closes the shared Request session and clears the Portal's local session state. If an unexpected remote session closure or invalidation occurs, the Portal can retain a stale local session ID. The source of unexpected invalidation can vary and is not always established from Portal logs alone.
+The Portal persists the Session ID and original start timestamp in SQLite. After a Portal or container restart with the same database, it restores that information without automatically opening a replacement session. Restoration does not guarantee remote validity, and restart does not clear an invalid saved session.
 
-When `adminControlsEnabled` is `true`, End Discovery is available. The recommended manual recovery procedure is:
+Discovery responses confirming that a session is closed or missing cause the Portal to clear the saved session state. Connectivity failures, including timeouts, do not automatically invalidate it. Automatic recovery is limited: the Segments search can open a replacement session and retry once. Other discovery paths can clear an invalid session and require **Start Discovery** again; universal automatic retry is not provided.
+
+When `adminControlsEnabled` is `true`, **End Discovery** attempts to close the remote session and clears the persisted and local session state even if the Connector reports a remote-close failure. If saving the cleared state fails, the Portal reports an error and retains the saved state; resolve the database access problem and retry. For manual recovery:
 
 1. Select **End Discovery**.
 2. Return to the home page.
 3. Select **Start Discovery** to open a new Request session.
 
-When `adminControlsEnabled` is `false`, End Discovery is unavailable. Start Discovery may reuse a stale session ID, and automatic recovery is incomplete. Restarting the Portal application may be required to clear the stored session state and allow a fresh Request session to be opened.
+When `adminControlsEnabled` is `false`, End Discovery is unavailable. After a discovery request confirms invalidation and clears the saved state, use **Start Discovery** again. Restarting the Portal is not a session reset.
 
-The Publication Collector primarily receives measurement data through Publication sessions. Normal publication processing does not require a Consumer Request session. When reference information is missing, the Collector independently opens a temporary Consumer Request session for targeted reference-data enrichment and then closes that session. Concurrent Request session activity may potentially interfere with the Portal's existing session, but the repository does not establish that Collector enrichment definitively terminates the Portal session.
+Changes saved through Portal Settings to effective Data Services connection values (URL or credentials), Connector configuration path, or CLI path invalidate the saved session state. Unrelated changes, such as the Grafana URL or Collector polling interval, do not. Start Discovery again after changing the connection.
 
-Simultaneous multi-user discovery has not been fully validated for v1.0.0 and is not a primary objective of this release. Because the Request session is shared application-wide, ending the shared session or encountering stale shared session state can affect other browser users.
+The Collector uses separate Publication sessions for normal publication processing. With Shared Request Session mode enabled, it reads the Portal-managed session information from the same live SQLite database for reference enrichment and does not open or close that session. If none is available, enrichment is deferred. Check [Publication Collector Settings](configuration.md#publication-collector-settings), especially when upgrading with an existing Collector configuration file.
+
+Simultaneous multi-user discovery has not been fully validated and is not a primary objective of this release. Because the Request Session is shared application-wide, ending or invalidating it can affect other browser users and Collector enrichment in shared mode.
 
 ## Publication Collector Offline, Disabled, or Error
 

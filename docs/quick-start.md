@@ -13,29 +13,27 @@ Use this guide for the shortest successful first run of the published MCEGold Di
 
 ## 1. Obtain the Release Image Archive
 
-Download the release archive from the GitHub Releases page. The permanent archive URL and filename policy are not finalized, so use the archive supplied with the release you are installing.
-
-Versioned examples in this documentation use placeholders such as:
+Download the release archive from the GitHub Releases page. The v1.0.1 examples use:
 
 ```text
-mcegold-discovery-<version>-linux-amd64.tar.gz
-mcegold-discovery:<version>
+mcegold-discovery-v1.0.1-linux-amd64.tar
+mcegold-discovery:1.0.1
 ```
 
-Use the actual version from your release.
+Substitute the supplied archive filename if it differs.
 
 ## 2. Load the Image
 
 From the folder containing the downloaded archive, load the image:
 
 ```text
-docker load -i <downloaded-release-archive>
+docker load -i mcegold-discovery-v1.0.1-linux-amd64.tar
 ```
 
 Docker prints the loaded image name and tag. For example:
 
 ```text
-Loaded image: mcegold-discovery:1.0.0
+Loaded image: mcegold-discovery:1.0.1
 ```
 
 Use the exact image tag printed by `docker load`.
@@ -51,7 +49,7 @@ docker image ls mcegold-discovery
 Use an explicit version tag such as:
 
 ```text
-mcegold-discovery:1.0.0
+mcegold-discovery:1.0.1
 ```
 
 ## 4. Create Persistent Volumes
@@ -105,6 +103,8 @@ Site -> Segment -> Measurement Location -> Measurements
 ```
 
 Confirm that discovery results appear before moving deeper into the workflow.
+
+The combined v1.0.1 image enables Shared Request Session mode for the Collector when it seeds new configuration. Start Discovery establishes the Portal-managed Consumer Request Session that the Collector can reuse for reference enrichment. If upgrading with an existing `/config/collector.local.json`, explicitly enable `useSharedRequestSession` or set `MCEGOLD_USE_SHARED_REQUEST_SESSION=true` as described in [Publication Collector Settings](configuration.md#publication-collector-settings).
 
 ## 9. Open Grafana
 
