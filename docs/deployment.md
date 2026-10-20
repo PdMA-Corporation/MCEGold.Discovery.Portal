@@ -4,7 +4,7 @@
 
 This guide deploys the published MCEGold Discovery Portal single-image Docker appliance. The image contains the Portal, Publication Collector, Connector CLI, SQLite discovery database, and Grafana.
 
-Download the release archive from the GitHub Releases page. The permanent release URL and filename policy are not finalized, so the commands below use version placeholders.
+Download the release archive from the GitHub Releases page. The v1.0.1 examples below use `mcegold-discovery-v1.0.1-linux-amd64.tar` and image tag `mcegold-discovery:1.0.1`. Substitute the supplied archive filename if it differs.
 
 Default service ports:
 
@@ -46,23 +46,23 @@ cd /path/to/downloaded/release
 Replace the archive name with the file supplied by the release.
 
 ```bash
-docker load -i ./mcegold-discovery-<version>-linux-amd64.tar.gz
+docker load -i ./mcegold-discovery-v1.0.1-linux-amd64.tar
 ```
 
 Expected output includes a loaded image tag, for example:
 
 ```text
-Loaded image: mcegold-discovery:1.0.0
+Loaded image: mcegold-discovery:1.0.1
 ```
 
 ### 4. Verify the Image and Set a Variable
 
 ```bash
 docker image ls mcegold-discovery
-IMAGE="mcegold-discovery:<version>"
+IMAGE="mcegold-discovery:1.0.1"
 ```
 
-Use the exact image tag printed by `docker load`; for example, `mcegold-discovery:1.0.0`.
+Use the exact image tag printed by `docker load`; for v1.0.1, `mcegold-discovery:1.0.1`.
 
 ### 5. Create Named Volumes
 
@@ -145,9 +145,9 @@ Do not remove `mcegold-config` or `mcegold-data` during a normal upgrade.
 ```bash
 docker stop mcegold-discovery
 docker rm mcegold-discovery
-docker load -i ./mcegold-discovery-<new-version>-linux-amd64.tar.gz
+docker load -i ./mcegold-discovery-v1.0.1-linux-amd64.tar
 docker image ls mcegold-discovery
-IMAGE="mcegold-discovery:<new-version>"
+IMAGE="mcegold-discovery:1.0.1"
 docker run -d \
   --name mcegold-discovery \
   --restart unless-stopped \
@@ -195,23 +195,23 @@ Set-Location C:\Path\To\Downloaded\Release
 Replace the archive name with the file supplied by the release.
 
 ```powershell
-docker load -i .\mcegold-discovery-<version>-linux-amd64.tar.gz
+docker load -i .\mcegold-discovery-v1.0.1-linux-amd64.tar
 ```
 
 Expected output includes a loaded image tag, for example:
 
 ```text
-Loaded image: mcegold-discovery:1.0.0
+Loaded image: mcegold-discovery:1.0.1
 ```
 
 ### 4. Verify the Image and Set a Variable
 
 ```powershell
 docker image ls mcegold-discovery
-$Image = "mcegold-discovery:<version>"
+$Image = "mcegold-discovery:1.0.1"
 ```
 
-Use the exact image tag printed by `docker load`; for example, `mcegold-discovery:1.0.0`.
+Use the exact image tag printed by `docker load`; for v1.0.1, `mcegold-discovery:1.0.1`.
 
 ### 5. Create Named Volumes
 
@@ -290,9 +290,9 @@ Do not remove `mcegold-config` or `mcegold-data` during a normal upgrade.
 ```powershell
 docker stop mcegold-discovery
 docker rm mcegold-discovery
-docker load -i .\mcegold-discovery-<new-version>-linux-amd64.tar.gz
+docker load -i .\mcegold-discovery-v1.0.1-linux-amd64.tar
 docker image ls mcegold-discovery
-$Image = "mcegold-discovery:<new-version>"
+$Image = "mcegold-discovery:1.0.1"
 docker run -d `
   --name mcegold-discovery `
   --restart unless-stopped `
@@ -337,6 +337,10 @@ The published single-image appliance already includes the Connector CLI.
 `mcegold-data` stores the SQLite discovery database and persistent runtime data under `/data`.
 
 Removing or replacing the container does not remove these volumes. Normal upgrades preserve data by reusing both volumes with the newer image. A clean reset intentionally removes both volumes and discards the saved state.
+
+The combined v1.0.1 image enables Shared Request Session mode in newly seeded Collector configuration. An existing `/config/collector.local.json` is preserved and may need `"useSharedRequestSession": true` added or updated explicitly. Alternatively, supply `-e MCEGOLD_USE_SHARED_REQUEST_SESSION=true` when creating the container; this environment variable overrides the file value. Restart the container after editing the file. See [Publication Collector Settings](configuration.md#publication-collector-settings).
+
+The Portal and Collector must use the same live SQLite database, normally `/data/discovery_portal.db`. The Portal persists its Consumer Request Session ID and original start timestamp there and restores them on restart without automatically opening a replacement session. The remote session may no longer be valid; see [Request Session Management](troubleshooting.md#known-limitations--request-session-management). No SQLite schema migration is required from a supported v1.0.0 database.
 
 ## Troubleshooting
 

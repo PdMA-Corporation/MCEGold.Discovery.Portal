@@ -14,6 +14,8 @@ The default deployment is a single Docker image intended for demos, evaluation, 
 
 The Portal focuses on guided top-down discovery from Site to Segment to Measurement Location to Measurements. The Publication Collector runs in the same appliance and stores incoming publication data in the local SQLite discovery database. Grafana reads that local database for dashboard views.
 
+In v1.0.1, the Portal owns and manages its Consumer Request Session and persists the Session ID and original start timestamp in SQLite. On restart, it restores that information without automatically opening a replacement session; the remote session may no longer be valid. The Collector can reuse the Portal-managed session for reference enrichment when shared mode is enabled, as it is by default in the combined v1.0.1 Docker image. See [Publication Collector Settings](docs/configuration.md#publication-collector-settings) for configuration and upgrade details.
+
 ## Architecture at a Glance
 
 ![MCEGold Discovery Portal single-container system architecture](docs/images/MCEGold%20Discovery%20Portal%20Architecture%20Diagram.png)

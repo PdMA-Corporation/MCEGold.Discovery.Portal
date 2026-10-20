@@ -20,7 +20,7 @@ The appliance is intended for demos, evaluation, and integration planning. It is
 
 ![MCEGold Discovery Portal single-container system architecture](images/MCEGold%20Discovery%20Portal%20Architecture%20Diagram.png)
 
-The Connector CLI is the public integration boundary used by the appliance to communicate with MCEGold Data Services. The Portal and Publication Collector invoke the bundled CLI independently; the diagram represents this shared integration boundary, not a single shared CLI process or session. The Collector does not call the Portal's discovery API or depend on its interactive workflow.
+The Connector CLI is the public integration boundary used by the appliance to communicate with MCEGold Data Services. The Portal and Publication Collector invoke the bundled CLI independently. The Portal owns and manages its Consumer Request Session. With Shared Request Session mode enabled, the Collector reads the session information from the same live SQLite database and reuses it for reference enrichment without opening or closing the Portal-owned session. The Collector does not call the Portal's discovery API; shared enrichment requires an available Portal-managed session, while publication processing uses separate Publication sessions. See [Discovery Workflows](workflows.md).
 
 The Portal provides the Web UI and API on port `8000`, performs guided discovery, and reads and writes local discovery data. The Publication Collector receives measurement publications and writes collected measurements, discovered reference context, and runtime status directly to the shared SQLite database. Grafana serves dashboards on port `3000` and reads that database through the provisioned SQLite datasource.
 
@@ -47,6 +47,8 @@ The default persistent paths are:
 The diagram shows both persistent directories conceptually. `/config` supplies configuration to the appliance components; it does not store the SQLite database. `/data` contains `discovery_portal.db` and Grafana runtime data.
 
 The Portal initializes the SQLite discovery database when needed. The Publication Collector waits for the Portal-owned database schema to be ready before it starts processing, then writes directly to that database. Grafana reads from the local SQLite database.
+
+The Portal persists its Consumer Request Session ID and original start timestamp in SQLite. Retaining `/data` allows the Portal to restore that information after application or container restart without automatically opening a replacement session. The restored remote session may no longer be valid. This v1.0.1 capability uses the existing supported SQLite schema and requires no schema migration from v1.0.0.
 
 Fresh databases are created at the current supported schema. Older pre-release or incompatible databases are not automatically upgraded.
 
