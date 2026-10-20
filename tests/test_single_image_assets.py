@@ -1,5 +1,9 @@
 from pathlib import Path
+import hashlib
+import importlib.util
 import json
+
+import pytest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -109,6 +113,79 @@ def test_single_image_authoritative_cli_path_is_consistent() -> None:
     assert f"MCEGOLD_CLI_PATH={cli_path}" in dockerfile
     assert portal_template["mcegoldCliPath"] == cli_path
     assert collector_template["cliPath"] == cli_path
+
+
+def test_single_image_collector_template_enables_shared_request_session() -> None:
+    template = json.loads(read("docker/single-image/templates/collector.local.json"))
+
+    assert template["useSharedRequestSession"] is True
+
+
+def load_overlay_packaging():
+    spec = importlib.util.spec_from_file_location(
+        "overlay_prepare_context", REPO_ROOT / "docker/overlay-v1.0.1/prepare_context.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+@pytest.mark.parametrize("change", [{"useSharedRequestSession": False}, {"password": "not-a-release-setting"}])
+def test_overlay_rejects_nonrelease_collector_configuration(monkeypatch, tmp_path, change) -> None:
+    packaging = load_overlay_packaging()
+    template = json.loads(read("docker/single-image/templates/collector.local.json"))
+    template.update(change)
+    path = tmp_path / "collector.local.json"
+    path.write_text(json.dumps(template), encoding="utf-8")
+    monkeypatch.setattr(packaging, "COLLECTOR_TEMPLATE", path)
+
+    with pytest.raises(ValueError, match="only the public v1.0.1 defaults"):
+        packaging.collector_template_bytes()
+
+
+def test_overlay_context_contains_release_template_and_excludes_runtime_files(monkeypatch, tmp_path) -> None:
+    packaging = load_overlay_packaging()
+    source = tmp_path / "source"
+    app = source / "app/main.py"
+    app.parent.mkdir(parents=True)
+    app.write_text("# packaging fixture\n", encoding="utf-8")
+    (source / "data").mkdir()
+    (source / "data/runtime.db").write_bytes(b"not-for-packaging")
+    (source / "configs").mkdir()
+    (source / "configs/collector.local.json").write_text('{"password":"fixture"}', encoding="utf-8")
+    archive = tmp_path / packaging.ARCHIVE_NAME
+    archive.write_bytes(b"publisher archive fixture")
+    wheel = tmp_path / packaging.TOOLS_NAME
+    wheel.write_bytes(b"offline tooling fixture")
+    output = tmp_path / "context"
+
+    monkeypatch.setattr(packaging, "ROOT", source)
+    monkeypatch.setattr(packaging, "portal_files", lambda: [app])
+    # Archive validation is separate; exercise preparation without external inputs.
+    monkeypatch.setattr(packaging, "check_archive", lambda path: None)
+    monkeypatch.setattr(packaging, "TOOLS_SHA256", hashlib.sha256(wheel.read_bytes()).hexdigest())
+    git_outputs = {"branch": b"staging\n", "rev-parse": b"fixture-commit\n", "status": b""}
+    monkeypatch.setattr(packaging.subprocess, "check_output", lambda args, **kwargs: git_outputs[args[1]])
+    monkeypatch.setattr("sys.argv", [
+        "prepare_context.py", "--collector-archive", str(archive),
+        "--setuptools-wheel", str(wheel), "--output", str(output),
+    ])
+
+    packaging.main()
+
+    assert {p.relative_to(output).as_posix() for p in output.rglob("*") if p.is_file()} == {
+        "app/main.py", "collector.local.json", packaging.ARCHIVE_NAME, packaging.TOOLS_NAME,
+        "Dockerfile", "verify_image.py", "provenance.json", ".dockerignore", "SHA256SUMS",
+    }
+    assert json.loads((output / "collector.local.json").read_text())["useSharedRequestSession"] is True
+    assert (
+        "COPY --chown=mcegold:mcegold collector.local.json /app/templates/collector.local.json"
+        in (output / "Dockerfile").read_text()
+    )
+    assert "!collector.local.json\n" in (output / ".dockerignore").read_text()
+    for line in (output / "SHA256SUMS").read_text().splitlines():
+        digest, name = line.split("  ", 1)
+        assert hashlib.sha256((output / name).read_bytes()).hexdigest() == digest
 
 
 def test_single_image_supervisor_manages_portal_and_collector() -> None:
